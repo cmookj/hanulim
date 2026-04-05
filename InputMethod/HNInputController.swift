@@ -87,7 +87,13 @@ extension HNInputController {
         }
         let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
         if enableIfNeeded {
-            TISEnableInputSource(source)
+            let isEnabled = TISGetInputSourceProperty(source, kTISPropertyInputSourceIsEnabled)
+                .map { CFBooleanGetValue(Unmanaged<CFBoolean>.fromOpaque($0).takeUnretainedValue()) }
+                ?? false
+            if !isEnabled {
+                TISEnableInputSource(source)
+                HNLog("selectInputSource: enabling \(id)")
+            }
         }
         let err = TISSelectInputSource(source)
         HNLog("selectInputSource: \(id) → OSStatus \(err)")
