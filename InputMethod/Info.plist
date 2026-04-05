@@ -163,7 +163,7 @@
 				<key>tsInputModeDefaultStateKey</key>
 				<false/>
 				<key>tsInputModeIsVisibleKey</key>
-				<false/>
+				<true/>
 				<key>tsInputModeMenuIconFileKey</key>
 				<string>hanulimlat.png</string>
 				<key>tsInputModePaletteIconFileKey</key>

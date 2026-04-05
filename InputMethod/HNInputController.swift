@@ -89,28 +89,20 @@ extension HNInputController {
             HNLog("selectInputSource: not found: \(id)")
             return
         }
-        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
+        // Retain the source across the async dispatch.
+        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).retain().takeRetainedValue()
 
-        // Check whether the source is already enabled.
-        let isEnabled: Bool
-        if let ptr = TISGetInputSourceProperty(source, kTISPropertyInputSourceIsEnabled) {
-            isEnabled = CFBooleanGetValue(Unmanaged<CFBoolean>.fromOpaque(ptr).takeUnretainedValue())
-        } else {
-            isEnabled = false
-        }
-
-        if !isEnabled {
+        // Dispatch after the current IMK event handler returns.
+        // TISSelectInputSource called synchronously inside inputText may be
+        // ignored by the system; running it asynchronously avoids that.
+        DispatchQueue.main.async {
             if enableIfNeeded {
-                // Show the one-time system security dialog.
-                // TISSelectInputSource will work on the next Shift+Space once approved.
+                // No-op if already enabled; shows one-time security dialog otherwise.
                 TISEnableInputSource(source)
-                HNLog("selectInputSource: enabling \(id) — approve dialog, then press Shift+Space again for icon")
             }
-            return
+            let err = TISSelectInputSource(source)
+            HNLog("selectInputSource: \(id) → OSStatus \(err)")
         }
-
-        TISSelectInputSource(source)
-        HNLog("selectInputSource: selected \(id)")
     }
 }
 
