@@ -7,6 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E16F6AE2F7FAFA8007519AE /* HNDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */; };
+		0E16F6AF2F7FAFA8007519AE /* HNDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */; };
+		0E16F6B02F7FAFA8007519AE /* HNDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */; };
+		0E16F6B12F7FAFA8007519AE /* HNDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */; };
+		0E16F6B22F7FAFA8007519AE /* HNDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */; };
+		0E16F6B32F7FAFA8007519AE /* HNDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */; };
+		0E16F6B52F7FAFCC007519AE /* ATImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6B42F7FAFCC007519AE /* ATImport.swift */; };
+		0E16F6B92F7FAFF4007519AE /* AEAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */; };
+		0E16F6CD2F7FB1D5007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6CC2F7FB1D5007519AE /* main.swift */; };
+		0E16F6CF2F7FB1ED007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6CE2F7FB1ED007519AE /* main.swift */; };
+		0E16F6D12F7FB20A007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D02F7FB20A007519AE /* main.swift */; };
+		0E16F6D82F7FB274007519AE /* HNCandidatesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D42F7FB274007519AE /* HNCandidatesController.swift */; };
+		0E16F6D92F7FB274007519AE /* HNInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D62F7FB274007519AE /* HNInputController.swift */; };
+		0E16F6DA2F7FB274007519AE /* HNCandidates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D32F7FB274007519AE /* HNCandidates.swift */; };
+		0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D52F7FB274007519AE /* HNInputContext.swift */; };
+		0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */; };
+		0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D22F7FB274007519AE /* HNAppController.swift */; };
 		6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57714A3BEC000E2A10D /* hanulim2a.png */; };
 		6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57814A3BEC000E2A10D /* hanulim3.png */; };
 		6014B58014A3BEC000E2A10D /* hanulim3a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57914A3BEC000E2A10D /* hanulim3a.png */; };
@@ -29,32 +46,18 @@
 		74BEAC0E0E4A9FB5001AA535 /* preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 74BEAC0D0E4A9FB5001AA535 /* preferences.xib */; };
 		74BEAC140E4A9FEA001AA535 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 74BEAC130E4A9FEA001AA535 /* MainMenu.xib */; };
 		74BEAC190E4AA00A001AA535 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 74BEAC180E4AA00A001AA535 /* InfoPlist.strings */; };
-		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		CF0576FB0E103B7400F8DA39 /* Abbrevs.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = CF0576FA0E103B7400F8DA39 /* Abbrevs.xcdatamodel */; };
 		CF3E863D0E0BE3E000F1116F /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		CF3E86440E0BE52100F1116F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3E86430E0BE52100F1116F /* main.m */; };
 		CF3E864D0E0BE63100F1116F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CF3E864B0E0BE63100F1116F /* InfoPlist.strings */; };
 		CF3E86510E0BE67600F1116F /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = CF3E864F0E0BE67600F1116F /* MainMenu.xib */; };
-		CF3E86540E0BE69500F1116F /* AEAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = CF3E86530E0BE69500F1116F /* AEAppDelegate.m */; };
 		CF3E86630E0BEE8000F1116F /* AbbrevEdit.app in Copy Files */ = {isa = PBXBuildFile; fileRef = CF3E85ED0E0BDE2F00F1116F /* AbbrevEdit.app */; };
 		CF4198760E1048DC00A2BE4A /* Abbrevs.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = CF0576FA0E103B7400F8DA39 /* Abbrevs.xcdatamodel */; };
-		CF4198B30E12B45600A2BE4A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = CF4198B20E12B45600A2BE4A /* main.m */; };
 		CF4198B80E14576C00A2BE4A /* Abbrevs.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = CF0576FA0E103B7400F8DA39 /* Abbrevs.xcdatamodel */; };
-		CF4198B90E14577E00A2BE4A /* HNDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE976370E0E07C0000061D6 /* HNDataController.m */; };
 		CF4198C10E14584500A2BE4A /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13E42FB307B3F0F600E4EEF1 /* CoreData.framework */; };
 		CF4198C40E1459F200A2BE4A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29B97325FDCFA39411CA2CEA /* Foundation.framework */; };
-		CF4CD5DA0CD50F3E00E2A2F5 /* HNInputController.m in Sources */ = {isa = PBXBuildFile; fileRef = CF4CD5D70CD50F3E00E2A2F5 /* HNInputController.m */; };
 		CF4CD5E20CD50F9700E2A2F5 /* InputMethodKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CF4CD5E10CD50F9700E2A2F5 /* InputMethodKit.framework */; };
-		CF571FE80E1A56F20075397A /* HNCandidates.m in Sources */ = {isa = PBXBuildFile; fileRef = CF571FE70E1A56F20075397A /* HNCandidates.m */; };
-		CF63059F0E34F7C8009E6A72 /* HNUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = CF63059E0E34F7C8009E6A72 /* HNUserDefaults.m */; };
 		CF675A4B143223D500295A97 /* abbrevtool in Resources */ = {isa = PBXBuildFile; fileRef = CF4198950E12ADDF00A2BE4A /* abbrevtool */; };
-		CFA3DEDC0E03BD5A00BF8CD5 /* HNCandidatesController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFA3DEDB0E03BD5A00BF8CD5 /* HNCandidatesController.m */; };
-		CFCD185F0CD613DA00213F4E /* HNAppController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFCD185E0CD613DA00213F4E /* HNAppController.m */; };
-		CFCD19C60CDA333A00213F4E /* HNInputContext.m in Sources */ = {isa = PBXBuildFile; fileRef = CFCD19C50CDA333A00213F4E /* HNInputContext.m */; };
-		CFD961C90E1675B0006710FF /* ATImport.m in Sources */ = {isa = PBXBuildFile; fileRef = CFD961C80E1675B0006710FF /* ATImport.m */; };
-		CFE976380E0E07C0000061D6 /* HNDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE976370E0E07C0000061D6 /* HNDataController.m */; };
-		CFE976490E0E0EF8000061D6 /* HNDataController.m in Sources */ = {isa = PBXBuildFile; fileRef = CFE976370E0E07C0000061D6 /* HNDataController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,12 +93,23 @@
 
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = InputMethod/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HNDataController.swift; sourceTree = "<group>"; };
+		0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HNDebug.swift; sourceTree = "<group>"; };
+		0E16F6B42F7FAFCC007519AE /* ATImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATImport.swift; sourceTree = "<group>"; };
+		0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AEAppDelegate.swift; sourceTree = "<group>"; };
+		0E16F6CC2F7FB1D5007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = AbbrevEdit/main.swift; sourceTree = "<group>"; };
+		0E16F6CE2F7FB1ED007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = InputMethod/main.swift; sourceTree = "<group>"; };
+		0E16F6D02F7FB20A007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = abbrevtool/main.swift; sourceTree = "<group>"; };
+		0E16F6D22F7FB274007519AE /* HNAppController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNAppController.swift; path = InputMethod/HNAppController.swift; sourceTree = "<group>"; };
+		0E16F6D32F7FB274007519AE /* HNCandidates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNCandidates.swift; path = InputMethod/HNCandidates.swift; sourceTree = "<group>"; };
+		0E16F6D42F7FB274007519AE /* HNCandidatesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNCandidatesController.swift; path = InputMethod/HNCandidatesController.swift; sourceTree = "<group>"; };
+		0E16F6D52F7FB274007519AE /* HNInputContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputContext.swift; path = InputMethod/HNInputContext.swift; sourceTree = "<group>"; };
+		0E16F6D62F7FB274007519AE /* HNInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputController.swift; path = InputMethod/HNInputController.swift; sourceTree = "<group>"; };
+		0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNUserDefaults.swift; path = InputMethod/HNUserDefaults.swift; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
-		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = InputMethod/main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		32CA4F630368D1EE00C91783 /* Hanulim_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Hanulim_Prefix.pch; path = InputMethod/Hanulim_Prefix.pch; sourceTree = "<group>"; };
 		6014B57714A3BEC000E2A10D /* hanulim2a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim2a.png; path = InputMethod/hanulim2a.png; sourceTree = "<group>"; };
 		6014B57814A3BEC000E2A10D /* hanulim3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3.png; path = InputMethod/hanulim3.png; sourceTree = "<group>"; };
 		6014B57914A3BEC000E2A10D /* hanulim3a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3a.png; path = InputMethod/hanulim3a.png; sourceTree = "<group>"; };
@@ -122,35 +136,12 @@
 		8D1107320486CEB800E47090 /* Hanulim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hanulim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF0576FA0E103B7400F8DA39 /* Abbrevs.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = Abbrevs.xcdatamodel; sourceTree = "<group>"; };
 		CF3E85ED0E0BDE2F00F1116F /* AbbrevEdit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AbbrevEdit.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF3E86360E0BE2A900F1116F /* HNAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNAppController.h; path = InputMethod/HNAppController.h; sourceTree = "<group>"; };
-		CF3E86420E0BE50100F1116F /* AbbrevEdit_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AbbrevEdit_Prefix.pch; path = AbbrevEdit/AbbrevEdit_Prefix.pch; sourceTree = "<group>"; };
-		CF3E86430E0BE52100F1116F /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AbbrevEdit/main.m; sourceTree = "<group>"; };
 		CF3E86450E0BE54900F1116F /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AbbrevEdit/Info.plist; sourceTree = "<group>"; };
 		CF3E864C0E0BE63100F1116F /* en */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = en; path = AbbrevEdit/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		CF3E86500E0BE67600F1116F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = AbbrevEdit/en.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		CF3E86520E0BE69500F1116F /* AEAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AEAppDelegate.h; path = AbbrevEdit/AEAppDelegate.h; sourceTree = "<group>"; };
-		CF3E86530E0BE69500F1116F /* AEAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AEAppDelegate.m; path = AbbrevEdit/AEAppDelegate.m; sourceTree = "<group>"; };
 		CF4198950E12ADDF00A2BE4A /* abbrevtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = abbrevtool; sourceTree = BUILT_PRODUCTS_DIR; };
-		CF4198B00E12B41800A2BE4A /* abbrevtool_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = abbrevtool_Prefix.pch; path = abbrevtool/abbrevtool_Prefix.pch; sourceTree = "<group>"; };
-		CF4198B20E12B45600A2BE4A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = abbrevtool/main.m; sourceTree = "<group>"; };
-		CF45B4950DF2896B00109833 /* HNDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HNDebug.h; sourceTree = "<group>"; };
-		CF4CD5D60CD50F3E00E2A2F5 /* HNInputController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNInputController.h; path = InputMethod/HNInputController.h; sourceTree = "<group>"; };
-		CF4CD5D70CD50F3E00E2A2F5 /* HNInputController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNInputController.m; path = InputMethod/HNInputController.m; sourceTree = "<group>"; };
 		CF4CD5E10CD50F9700E2A2F5 /* InputMethodKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = InputMethodKit.framework; path = /System/Library/Frameworks/InputMethodKit.framework; sourceTree = "<absolute>"; };
-		CF571FE60E1A56F20075397A /* HNCandidates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNCandidates.h; path = InputMethod/HNCandidates.h; sourceTree = "<group>"; };
-		CF571FE70E1A56F20075397A /* HNCandidates.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNCandidates.m; path = InputMethod/HNCandidates.m; sourceTree = "<group>"; };
-		CF63059D0E34F7C8009E6A72 /* HNUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNUserDefaults.h; path = InputMethod/HNUserDefaults.h; sourceTree = "<group>"; };
-		CF63059E0E34F7C8009E6A72 /* HNUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNUserDefaults.m; path = InputMethod/HNUserDefaults.m; sourceTree = "<group>"; };
-		CFA3DEDA0E03BD5A00BF8CD5 /* HNCandidatesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNCandidatesController.h; path = InputMethod/HNCandidatesController.h; sourceTree = "<group>"; };
-		CFA3DEDB0E03BD5A00BF8CD5 /* HNCandidatesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNCandidatesController.m; path = InputMethod/HNCandidatesController.m; sourceTree = "<group>"; };
-		CFCD185E0CD613DA00213F4E /* HNAppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNAppController.m; path = InputMethod/HNAppController.m; sourceTree = "<group>"; };
-		CFCD19C40CDA333A00213F4E /* HNInputContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HNInputContext.h; path = InputMethod/HNInputContext.h; sourceTree = "<group>"; };
-		CFCD19C50CDA333A00213F4E /* HNInputContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HNInputContext.m; path = InputMethod/HNInputContext.m; sourceTree = "<group>"; };
 		CFD7D0490DF716A100D0C515 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = InputMethod/en.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		CFD961C70E1675B0006710FF /* ATImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ATImport.h; path = abbrevtool/ATImport.h; sourceTree = "<group>"; };
-		CFD961C80E1675B0006710FF /* ATImport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ATImport.m; path = abbrevtool/ATImport.m; sourceTree = "<group>"; };
-		CFE976360E0E07C0000061D6 /* HNDataController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HNDataController.h; sourceTree = "<group>"; };
-		CFE976370E0E07C0000061D6 /* HNDataController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HNDataController.m; sourceTree = "<group>"; };
 		CFF8A69A0E20EFC500DD47E7 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = InputMethod/en.lproj/preferences.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -187,18 +178,12 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				CF3E86360E0BE2A900F1116F /* HNAppController.h */,
-				CFCD185E0CD613DA00213F4E /* HNAppController.m */,
-				CF4CD5D60CD50F3E00E2A2F5 /* HNInputController.h */,
-				CF4CD5D70CD50F3E00E2A2F5 /* HNInputController.m */,
-				CFCD19C40CDA333A00213F4E /* HNInputContext.h */,
-				CFCD19C50CDA333A00213F4E /* HNInputContext.m */,
-				CFA3DEDA0E03BD5A00BF8CD5 /* HNCandidatesController.h */,
-				CFA3DEDB0E03BD5A00BF8CD5 /* HNCandidatesController.m */,
-				CF571FE60E1A56F20075397A /* HNCandidates.h */,
-				CF571FE70E1A56F20075397A /* HNCandidates.m */,
-				CF63059D0E34F7C8009E6A72 /* HNUserDefaults.h */,
-				CF63059E0E34F7C8009E6A72 /* HNUserDefaults.m */,
+				0E16F6D22F7FB274007519AE /* HNAppController.swift */,
+				0E16F6D32F7FB274007519AE /* HNCandidates.swift */,
+				0E16F6D42F7FB274007519AE /* HNCandidatesController.swift */,
+				0E16F6D52F7FB274007519AE /* HNInputContext.swift */,
+				0E16F6D62F7FB274007519AE /* HNInputController.swift */,
+				0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -249,8 +234,7 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				32CA4F630368D1EE00C91783 /* Hanulim_Prefix.pch */,
-				29B97316FDCFA39411CA2CEA /* main.m */,
+				0E16F6CE2F7FB1ED007519AE /* main.swift */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -317,9 +301,8 @@
 		CF3E860B0E0BE1B700F1116F /* Shared Sources */ = {
 			isa = PBXGroup;
 			children = (
-				CF45B4950DF2896B00109833 /* HNDebug.h */,
-				CFE976360E0E07C0000061D6 /* HNDataController.h */,
-				CFE976370E0E07C0000061D6 /* HNDataController.m */,
+				0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */,
+				0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */,
 			);
 			name = "Shared Sources";
 			sourceTree = "<group>";
@@ -327,8 +310,7 @@
 		CF3E863F0E0BE4C900F1116F /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				CF3E86520E0BE69500F1116F /* AEAppDelegate.h */,
-				CF3E86530E0BE69500F1116F /* AEAppDelegate.m */,
+				0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -336,8 +318,7 @@
 		CF3E86400E0BE4D000F1116F /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				CF3E86420E0BE50100F1116F /* AbbrevEdit_Prefix.pch */,
-				CF3E86430E0BE52100F1116F /* main.m */,
+				0E16F6CC2F7FB1D5007519AE /* main.swift */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -364,8 +345,7 @@
 		CF4198B10E12B42800A2BE4A /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				CF4198B00E12B41800A2BE4A /* abbrevtool_Prefix.pch */,
-				CF4198B20E12B45600A2BE4A /* main.m */,
+				0E16F6D02F7FB20A007519AE /* main.swift */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -381,8 +361,7 @@
 		CFD961C60E16754D006710FF /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				CFD961C70E1675B0006710FF /* ATImport.h */,
-				CFD961C80E1675B0006710FF /* ATImport.m */,
+				0E16F6B42F7FAFCC007519AE /* ATImport.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -450,12 +429,24 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				TargetAttributes = {
+					8D1107260486CEB800E47090 = {
+						LastSwiftMigration = 2630;
+					};
+					CF3E85EC0E0BDE2F00F1116F = {
+						LastSwiftMigration = 2630;
+					};
+					CF4198940E12ADDF00A2BE4A = {
+						LastSwiftMigration = 2630;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Hanulim" */;
 			compatibilityVersion = "Xcode 3.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
 			knownRegions = (
+				en,
 				English,
 				Japanese,
 				French,
@@ -522,15 +513,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				CF4CD5DA0CD50F3E00E2A2F5 /* HNInputController.m in Sources */,
-				CFCD185F0CD613DA00213F4E /* HNAppController.m in Sources */,
-				CFCD19C60CDA333A00213F4E /* HNInputContext.m in Sources */,
-				CFA3DEDC0E03BD5A00BF8CD5 /* HNCandidatesController.m in Sources */,
-				CFE976490E0E0EF8000061D6 /* HNDataController.m in Sources */,
+				0E16F6B22F7FAFA8007519AE /* HNDataController.swift in Sources */,
+				0E16F6B32F7FAFA8007519AE /* HNDebug.swift in Sources */,
 				CF4198760E1048DC00A2BE4A /* Abbrevs.xcdatamodel in Sources */,
-				CF571FE80E1A56F20075397A /* HNCandidates.m in Sources */,
-				CF63059F0E34F7C8009E6A72 /* HNUserDefaults.m in Sources */,
+				0E16F6D82F7FB274007519AE /* HNCandidatesController.swift in Sources */,
+				0E16F6D92F7FB274007519AE /* HNInputController.swift in Sources */,
+				0E16F6DA2F7FB274007519AE /* HNCandidates.swift in Sources */,
+				0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */,
+				0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */,
+				0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */,
+				0E16F6CF2F7FB1ED007519AE /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -538,10 +530,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF3E86440E0BE52100F1116F /* main.m in Sources */,
-				CF3E86540E0BE69500F1116F /* AEAppDelegate.m in Sources */,
-				CFE976380E0E07C0000061D6 /* HNDataController.m in Sources */,
+				0E16F6B92F7FAFF4007519AE /* AEAppDelegate.swift in Sources */,
+				0E16F6CD2F7FB1D5007519AE /* main.swift in Sources */,
 				CF0576FB0E103B7400F8DA39 /* Abbrevs.xcdatamodel in Sources */,
+				0E16F6AE2F7FAFA8007519AE /* HNDataController.swift in Sources */,
+				0E16F6AF2F7FAFA8007519AE /* HNDebug.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -549,10 +542,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CF4198B30E12B45600A2BE4A /* main.m in Sources */,
 				CF4198B80E14576C00A2BE4A /* Abbrevs.xcdatamodel in Sources */,
-				CF4198B90E14577E00A2BE4A /* HNDataController.m in Sources */,
-				CFD961C90E1675B0006710FF /* ATImport.m in Sources */,
+				0E16F6D12F7FB20A007519AE /* main.swift in Sources */,
+				0E16F6B02F7FAFA8007519AE /* HNDataController.swift in Sources */,
+				0E16F6B12F7FAFA8007519AE /* HNDebug.swift in Sources */,
+				0E16F6B52F7FAFCC007519AE /* ATImport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -621,16 +615,18 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = InputMethod/Hanulim_Prefix.pch;
 				INFOPLIST_FILE = InputMethod/Info.plist;
 				INSTALL_PATH = "/Library/Input Methods";
 				PRODUCT_NAME = Hanulim;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -639,13 +635,14 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = InputMethod/Hanulim_Prefix.pch;
 				INFOPLIST_FILE = InputMethod/Info.plist;
 				INSTALL_PATH = "/Library/Input Methods";
 				PRODUCT_NAME = Hanulim;
+				SWIFT_VERSION = 6.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -658,7 +655,7 @@
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PREBINDING = NO;
 				SDKROOT = macosx;
 			};
@@ -673,7 +670,7 @@
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				PREBINDING = NO;
 				SDKROOT = macosx;
 			};
@@ -683,17 +680,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AbbrevEdit/AbbrevEdit_Prefix.pch;
 				INFOPLIST_FILE = AbbrevEdit/Info.plist;
 				PREBINDING = NO;
 				PRODUCT_NAME = AbbrevEdit;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -701,16 +700,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = AbbrevEdit/AbbrevEdit_Prefix.pch;
 				INFOPLIST_FILE = AbbrevEdit/Info.plist;
 				PREBINDING = NO;
 				PRODUCT_NAME = AbbrevEdit;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -719,16 +719,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = abbrevtool/abbrevtool_Prefix.pch;
 				INSTALL_PATH = /usr/local/bin;
 				PREBINDING = NO;
 				PRODUCT_NAME = abbrevtool;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -736,15 +738,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = abbrevtool/abbrevtool_Prefix.pch;
 				INSTALL_PATH = /usr/local/bin;
 				PREBINDING = NO;
 				PRODUCT_NAME = abbrevtool;
+				SWIFT_VERSION = 6.0;
 				ZERO_LINK = NO;
 			};
 			name = Release;
