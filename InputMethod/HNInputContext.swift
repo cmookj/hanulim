@@ -1228,8 +1228,16 @@ private let hnHandlableMask: UInt = {
 
 class HNInputContext {
 
+    private static let romanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
+
     private var keyboardLayout: HNKeyboardLayout?
     var userDefaults: (any HNICUserDefaults)?
+
+    /// True when the Roman (Latin bypass) mode is active.
+    private(set) var isRomanMode: Bool = false
+
+    /// The last non-Roman input mode, used to restore when exiting Roman mode.
+    private(set) var lastKoreanModeID: String = "org.cocomelo.inputmethod.Hanulim.2standard"
 
     var composedString: String?
 
@@ -1241,11 +1249,20 @@ class HNInputContext {
     // MARK: - Public API
 
     func setKeyboardLayout(name: String) {
-        keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
+        if name == HNInputContext.romanModeID {
+            isRomanMode = true
+        } else {
+            isRomanMode = false
+            lastKoreanModeID = name
+            keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
+        }
     }
 
     // Returns true if the key was handled.
     func handleKey(string: String, keyCode: Int, modifiers: Int, client: (any IMKTextInput)?) -> Bool {
+        if isRomanMode {
+            return false
+        }
         let couldHandle = self.couldHandle(modifiers: modifiers)
         let keyConv: UInt16 = couldHandle ? keyboardCode(keyCode: keyCode, modifiers: modifiers) : 0
 

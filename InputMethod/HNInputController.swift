@@ -5,7 +5,10 @@
  */
 
 import Cocoa
+import Carbon
 import InputMethodKit
+
+private let kRomanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
 
 @objc(HNInputController)
 class HNInputController: IMKInputController {
@@ -55,6 +58,35 @@ class HNInputController: IMKInputController {
     }
 }
 
+// MARK: - Roman Mode Toggle
+
+extension HNInputController {
+
+    private func toggleRomanMode() {
+        let targetID: String
+        if inputContext.isRomanMode {
+            targetID = inputContext.lastKoreanModeID
+        } else {
+            targetID = kRomanModeID
+        }
+        selectInputSource(id: targetID)
+    }
+
+    private func selectInputSource(id: String) {
+        let cfID = id as CFString
+        let filterDict = [kTISPropertyInputModeID: cfID] as CFDictionary
+        guard let list = TISCreateInputSourceList(filterDict, false)?.takeRetainedValue(),
+              CFArrayGetCount(list) > 0,
+              let rawPtr = CFArrayGetValueAtIndex(list, 0) else {
+            HNLog("toggleRomanMode: input source not found: \(id)")
+            return
+        }
+        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
+        TISSelectInputSource(source)
+        HNLog("toggleRomanMode: selected \(id)")
+    }
+}
+
 // MARK: - IMKStateSetting
 
 extension HNInputController {
@@ -92,7 +124,12 @@ extension HNInputController {
         let deviceFlags   = modifierFlags.intersection(.deviceIndependentFlagsMask)
         let firstChar     = string?.unicodeScalars.first?.value
 
-        if deviceFlags == .option, firstChar == 0x0d {
+        if deviceFlags == .shift, keyCode == 49 {
+            // Shift+Space: toggle Roman (Latin bypass) mode
+            inputContext.commitComposition(client: sender as? (any IMKTextInput))
+            toggleRomanMode()
+            sHandled = true
+        } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {
                 currentCandidates = HNCandidatesController.shared?.candidates(for: composed)
