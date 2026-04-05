@@ -143,6 +143,15 @@ extension HNInputController {
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             toggleRomanMode()
             sHandled = true
+            // Ghostty processes Shift+Space before calling the IME, inserting
+            // an unwanted blank space into the PTY. Send DEL to remove it.
+            if let c = sender as? (any IMKTextInput),
+               c.bundleIdentifier() == "com.mitchellh.ghostty" {
+                c.insertText(
+                    "\u{7f}",
+                    replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
+                )
+            }
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {
