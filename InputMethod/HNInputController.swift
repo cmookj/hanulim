@@ -63,31 +63,54 @@ class HNInputController: IMKInputController {
 extension HNInputController {
 
     private func toggleRomanMode() {
-        let targetID: String
         if inputContext.isRomanMode {
-            targetID = inputContext.lastKoreanModeID
+            // Restore the previous Korean layout immediately.
+            let koreanID = inputContext.lastKoreanModeID
+            inputContext.setKeyboardLayout(name: koreanID)
+            // Best-effort icon update via TIS (Korean is already enabled).
+            selectInputSource(id: koreanID, enableIfNeeded: false)
         } else {
-            targetID = kRomanModeID
+            // Enter Roman bypass immediately.
+            inputContext.setKeyboardLayout(name: kRomanModeID)
+            // Best-effort icon update via TIS.
+            // TISEnableInputSource shows a one-time system security dialog;
+            // we do NOT call TISSelectInputSource until the source is enabled,
+            // because TISEnableInputSource is asynchronous on modern macOS.
+            selectInputSource(id: kRomanModeID, enableIfNeeded: true)
         }
-        selectInputSource(id: targetID)
     }
 
-    private func selectInputSource(id: String) {
+    private func selectInputSource(id: String, enableIfNeeded: Bool) {
         let cfID = id as CFString
-        // Use kTISPropertyInputSourceID (matches TISInputSourceID in the plist).
-        // Pass true to include all installed sources, not just enabled ones —
-        // the Roman mode has tsInputModeDefaultStateKey=false.
         let filterDict = [kTISPropertyInputSourceID: cfID] as CFDictionary
         guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
               CFArrayGetCount(list) > 0,
               let rawPtr = CFArrayGetValueAtIndex(list, 0) else {
-            HNLog("toggleRomanMode: input source not found: \(id)")
+            HNLog("selectInputSource: not found: \(id)")
             return
         }
         let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
-        TISEnableInputSource(source)
+
+        // Check whether the source is already enabled.
+        let isEnabled: Bool
+        if let ptr = TISGetInputSourceProperty(source, kTISPropertyInputSourceIsEnabled) {
+            isEnabled = CFBooleanGetValue(Unmanaged<CFBoolean>.fromOpaque(ptr).takeUnretainedValue())
+        } else {
+            isEnabled = false
+        }
+
+        if !isEnabled {
+            if enableIfNeeded {
+                // Show the one-time system security dialog.
+                // TISSelectInputSource will work on the next Shift+Space once approved.
+                TISEnableInputSource(source)
+                HNLog("selectInputSource: enabling \(id) — approve dialog, then press Shift+Space again for icon")
+            }
+            return
+        }
+
         TISSelectInputSource(source)
-        HNLog("toggleRomanMode: selected \(id)")
+        HNLog("selectInputSource: selected \(id)")
     }
 }
 
