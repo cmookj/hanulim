@@ -1263,25 +1263,16 @@ class HNInputContext {
     // Returns true if the key was handled.
     func handleKey(string: String, keyCode: Int, modifiers: Int, client: (any IMKTextInput)?) -> Bool {
         if isRomanMode {
-            // For most apps, returning false re-dispatches the raw NSEvent
-            // through the AppKit responder chain (keyDown:), which is correct.
-            //
-            // Ghostty routes all keyDown events through NSTextInputContext.
-            // handleEvent before doing its own processing. Whether or not
-            // our handle() returns false, the event does not reliably reach
-            // Ghostty's own key handler. We must insert the text explicitly.
-            if client?.bundleIdentifier() == "com.mitchellh.ghostty",
-               let c = client {
-                let flags = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: modifiers))
-                if !flags.contains(.control), !flags.contains(.command),
-                   !string.isEmpty,
-                   string.unicodeScalars.allSatisfy({ $0.value >= 0x20 && $0.value != 0x7f }) {
-                    c.insertText(
-                        string,
-                        replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
-                    )
-                    return true
-                }
+            // Ghostty processes key events through its own handler *before*
+            // calling the IME via NSTextInputContext.handleEvent. Evidence:
+            // Shift+Space inserts a blank space in Ghostty even though our
+            // handle() returns true (consumed for mode-toggle) — the space
+            // was already sent to the PTY before we were called.
+            // For regular keys, returning false here triggers a re-dispatch
+            // loop that drops the event. Return true instead: Ghostty already
+            // processed the key, so we just need to not loop.
+            if client?.bundleIdentifier() == "com.mitchellh.ghostty" {
+                return true
             }
             return false
         }
