@@ -115,15 +115,24 @@ extension HNInputController {
 
 extension HNInputController {
 
-    override func inputText(_ string: String!, key keyCode: Int, modifiers flags: Int, client sender: Any!) -> Bool {
-        HNLog("HNInputController inputText: \(String(describing: string)) key: \(keyCode) modifiers: \(flags)")
+    // handle(_:client:) is used instead of inputText(_:key:modifiers:client:).
+    // When handle returns false the raw NSEvent is re-dispatched through the
+    // normal event chain and the app's keyDown: is called — which is what
+    // terminal emulators like Ghostty require. inputText returning false goes
+    // through IMK's text machinery and may not reach keyDown: reliably.
+    override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        guard event.type == .keyDown else { return false }
+
+        HNLog("HNInputController handle: keyCode=\(event.keyCode) modifiers=\(event.modifierFlags.rawValue)")
 
         var sHandled        = false
         var sShowCandidates = false
 
-        let modifierFlags = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: flags))
-        let deviceFlags   = modifierFlags.intersection(.deviceIndependentFlagsMask)
-        let firstChar     = string?.unicodeScalars.first?.value
+        let deviceFlags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let string      = event.characters ?? ""
+        let keyCode     = Int(event.keyCode)
+        let rawFlags    = Int(bitPattern: UInt(event.modifierFlags.rawValue))
+        let firstChar   = string.unicodeScalars.first?.value
 
         let isShiftOnly = deviceFlags.contains(.shift) &&
             !deviceFlags.contains(.control) &&
@@ -146,9 +155,9 @@ extension HNInputController {
         } else {
             let textClient = sender as? (any IMKTextInput)
             sHandled = inputContext.handleKey(
-                string: string ?? "",
+                string: string,
                 keyCode: keyCode,
-                modifiers: flags,
+                modifiers: rawFlags,
                 client: textClient
             )
             currentCandidates = nil
@@ -160,7 +169,7 @@ extension HNInputController {
             HNCandidatesController.shared?.hide()
         }
 
-        HNLog("HNInputController inputText => \(sHandled ? "YES" : "NO")")
+        HNLog("HNInputController handle => \(sHandled ? "YES" : "NO")")
         return sHandled
     }
 
