@@ -74,14 +74,18 @@ extension HNInputController {
 
     private func selectInputSource(id: String) {
         let cfID = id as CFString
-        let filterDict = [kTISPropertyInputModeID: cfID] as CFDictionary
-        guard let list = TISCreateInputSourceList(filterDict, false)?.takeRetainedValue(),
+        // Use kTISPropertyInputSourceID (matches TISInputSourceID in the plist).
+        // Pass true to include all installed sources, not just enabled ones —
+        // the Roman mode has tsInputModeDefaultStateKey=false.
+        let filterDict = [kTISPropertyInputSourceID: cfID] as CFDictionary
+        guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
               CFArrayGetCount(list) > 0,
               let rawPtr = CFArrayGetValueAtIndex(list, 0) else {
             HNLog("toggleRomanMode: input source not found: \(id)")
             return
         }
         let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
+        TISEnableInputSource(source)
         TISSelectInputSource(source)
         HNLog("toggleRomanMode: selected \(id)")
     }
@@ -124,7 +128,11 @@ extension HNInputController {
         let deviceFlags   = modifierFlags.intersection(.deviceIndependentFlagsMask)
         let firstChar     = string?.unicodeScalars.first?.value
 
-        if deviceFlags == .shift, keyCode == 49 {
+        let isShiftOnly = deviceFlags.contains(.shift) &&
+            !deviceFlags.contains(.control) &&
+            !deviceFlags.contains(.option) &&
+            !deviceFlags.contains(.command)
+        if isShiftOnly, keyCode == 49 {
             // Shift+Space: toggle Roman (Latin bypass) mode
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             toggleRomanMode()
