@@ -63,19 +63,15 @@ class HNInputController: IMKInputController {
 extension HNInputController {
 
     private func toggleRomanMode() {
+        // Toggle the bypass flag directly. isRomanMode must NOT go through
+        // setKeyboardLayout / setValue:forTag:client:, because TIS fires those
+        // callbacks even on failed mode switches, which would silently reset
+        // the bypass state.
         if inputContext.isRomanMode {
-            // Restore the previous Korean layout immediately.
-            let koreanID = inputContext.lastKoreanModeID
-            inputContext.setKeyboardLayout(name: koreanID)
-            // Best-effort icon update via TIS (Korean is already enabled).
-            selectInputSource(id: koreanID, enableIfNeeded: false)
+            inputContext.isRomanMode = false
+            selectInputSource(id: inputContext.lastKoreanModeID, enableIfNeeded: false)
         } else {
-            // Enter Roman bypass immediately.
-            inputContext.setKeyboardLayout(name: kRomanModeID)
-            // Best-effort icon update via TIS.
-            // TISEnableInputSource shows a one-time system security dialog;
-            // we do NOT call TISSelectInputSource until the source is enabled,
-            // because TISEnableInputSource is asynchronous on modern macOS.
+            inputContext.isRomanMode = true
             selectInputSource(id: kRomanModeID, enableIfNeeded: true)
         }
     }
@@ -89,20 +85,12 @@ extension HNInputController {
             HNLog("selectInputSource: not found: \(id)")
             return
         }
-        // Retain the source across the async dispatch.
-        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).retain().takeRetainedValue()
-
-        // Dispatch after the current IMK event handler returns.
-        // TISSelectInputSource called synchronously inside inputText may be
-        // ignored by the system; running it asynchronously avoids that.
-        DispatchQueue.main.async {
-            if enableIfNeeded {
-                // No-op if already enabled; shows one-time security dialog otherwise.
-                TISEnableInputSource(source)
-            }
-            let err = TISSelectInputSource(source)
-            HNLog("selectInputSource: \(id) → OSStatus \(err)")
+        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
+        if enableIfNeeded {
+            TISEnableInputSource(source)
         }
+        let err = TISSelectInputSource(source)
+        HNLog("selectInputSource: \(id) → OSStatus \(err)")
     }
 }
 
