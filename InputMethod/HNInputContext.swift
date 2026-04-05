@@ -1228,14 +1228,15 @@ private let hnHandlableMask: UInt = {
 
 class HNInputContext {
 
+    private static let romanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
+
     private var keyboardLayout: HNKeyboardLayout?
     var userDefaults: (any HNICUserDefaults)?
 
     /// True when the Roman (Latin bypass) mode is active.
-    /// Managed exclusively by HNInputController.toggleRomanMode().
-    /// Never written by setKeyboardLayout — that would let TIS events
-    /// (fired when TISSelectInputSource fails) silently reset the bypass.
-    var isRomanMode: Bool = false
+    /// Set by setKeyboardLayout, which is called from setValue:forTag:client:
+    /// after TISSelectInputSource successfully switches modes.
+    private(set) var isRomanMode: Bool = false
 
     /// The last non-Roman input mode, used to restore when exiting Roman mode.
     private(set) var lastKoreanModeID: String = "org.cocomelo.inputmethod.Hanulim.2standard"
@@ -1250,11 +1251,13 @@ class HNInputContext {
     // MARK: - Public API
 
     func setKeyboardLayout(name: String) {
-        // Roman mode is handled separately — skip it here so TIS events
-        // (setValue:forTag:client: callbacks) cannot overwrite isRomanMode.
-        guard name != "org.cocomelo.inputmethod.Hanulim.Roman" else { return }
-        lastKoreanModeID = name
-        keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
+        if name == HNInputContext.romanModeID {
+            isRomanMode = true
+        } else {
+            isRomanMode = false
+            lastKoreanModeID = name
+            keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
+        }
     }
 
     // Returns true if the key was handled.

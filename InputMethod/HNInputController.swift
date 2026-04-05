@@ -63,20 +63,17 @@ class HNInputController: IMKInputController {
 extension HNInputController {
 
     private func toggleRomanMode() {
-        // Toggle the bypass flag directly. isRomanMode must NOT go through
-        // setKeyboardLayout / setValue:forTag:client:, because TIS fires those
-        // callbacks even on failed mode switches, which would silently reset
-        // the bypass state.
-        if inputContext.isRomanMode {
-            inputContext.isRomanMode = false
-            selectInputSource(id: inputContext.lastKoreanModeID, enableIfNeeded: false)
-        } else {
-            inputContext.isRomanMode = true
-            selectInputSource(id: kRomanModeID, enableIfNeeded: true)
-        }
+        // Roman mode is a registered input source (added in System Settings,
+        // just like 2standard or 3final). TISSelectInputSource switches to it,
+        // and the system calls setValue:forTag:client: which drives isRomanMode
+        // via setKeyboardLayout — no direct flag manipulation needed here.
+        let targetID = inputContext.isRomanMode
+            ? inputContext.lastKoreanModeID
+            : kRomanModeID
+        selectInputSource(id: targetID)
     }
 
-    private func selectInputSource(id: String, enableIfNeeded: Bool) {
+    private func selectInputSource(id: String) {
         let cfID = id as CFString
         let filterDict = [kTISPropertyInputSourceID: cfID] as CFDictionary
         guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
@@ -86,15 +83,6 @@ extension HNInputController {
             return
         }
         let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
-        if enableIfNeeded {
-            let isEnabled = TISGetInputSourceProperty(source, kTISPropertyInputSourceIsEnabled)
-                .map { CFBooleanGetValue(Unmanaged<CFBoolean>.fromOpaque($0).takeUnretainedValue()) }
-                ?? false
-            if !isEnabled {
-                TISEnableInputSource(source)
-                HNLog("selectInputSource: enabling \(id)")
-            }
-        }
         let err = TISSelectInputSource(source)
         HNLog("selectInputSource: \(id) → OSStatus \(err)")
     }
