@@ -1263,6 +1263,22 @@ class HNInputContext {
     // Returns true if the key was handled.
     func handleKey(string: String, keyCode: Int, modifiers: Int, client: (any IMKTextInput)?) -> Bool {
         if isRomanMode {
+            // Returning false relies on IMK re-dispatching the raw event, which
+            // some terminal emulators (e.g. Ghostty) don't receive reliably.
+            // Instead, explicitly insert printable characters via insertText —
+            // every NSTextInputClient must implement it.
+            // Control/Command combos are passed through as raw events so the
+            // app can handle them as keyboard shortcuts or terminal sequences.
+            let flags = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: modifiers))
+            guard !flags.contains(.control), !flags.contains(.command) else { return false }
+            if !string.isEmpty,
+               string.unicodeScalars.allSatisfy({ $0.value >= 0x20 && $0.value != 0x7f }) {
+                client?.insertText(
+                    string,
+                    replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
+                )
+                return true
+            }
             return false
         }
         let couldHandle = self.couldHandle(modifiers: modifiers)
