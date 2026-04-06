@@ -13,8 +13,6 @@
 		0E16F6B12F7FAFA8007519AE /* HNDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */; };
 		0E16F6B22F7FAFA8007519AE /* HNDataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */; };
 		0E16F6B32F7FAFA8007519AE /* HNDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */; };
-		0E16F6B52F7FAFCC007519AE /* ATImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6B42F7FAFCC007519AE /* ATImport.swift */; };
-		0E16F6B92F7FAFF4007519AE /* AEAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */; };
 		0E16F6CD2F7FB1D5007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6CC2F7FB1D5007519AE /* main.swift */; };
 		0E16F6CF2F7FB1ED007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6CE2F7FB1ED007519AE /* main.swift */; };
 		0E16F6D12F7FB20A007519AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D02F7FB20A007519AE /* main.swift */; };
@@ -24,6 +22,8 @@
 		0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D52F7FB274007519AE /* HNInputContext.swift */; };
 		0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */; };
 		0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D22F7FB274007519AE /* HNAppController.swift */; };
+		0EDDEF7D2F8456A1001D5485 /* ATImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDEF7C2F8456A1001D5485 /* ATImport.swift */; };
+		0EDDEF7F2F845725001D5485 /* AEAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDEF7E2F845725001D5485 /* AEAppDelegate.swift */; };
 		6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57714A3BEC000E2A10D /* hanulim2a.png */; };
 		6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57814A3BEC000E2A10D /* hanulim3.png */; };
 		6014B58014A3BEC000E2A10D /* hanulim3a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57914A3BEC000E2A10D /* hanulim3a.png */; };
@@ -95,8 +95,6 @@
 		089C165DFE840E0CC02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = InputMethod/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0E16F6AC2F7FAFA8007519AE /* HNDataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HNDataController.swift; sourceTree = "<group>"; };
 		0E16F6AD2F7FAFA8007519AE /* HNDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HNDebug.swift; sourceTree = "<group>"; };
-		0E16F6B42F7FAFCC007519AE /* ATImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ATImport.swift; sourceTree = "<group>"; };
-		0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AEAppDelegate.swift; sourceTree = "<group>"; };
 		0E16F6CC2F7FB1D5007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = AbbrevEdit/main.swift; sourceTree = "<group>"; };
 		0E16F6CE2F7FB1ED007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = InputMethod/main.swift; sourceTree = "<group>"; };
 		0E16F6D02F7FB20A007519AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = main.swift; path = abbrevtool/main.swift; sourceTree = "<group>"; };
@@ -106,6 +104,8 @@
 		0E16F6D52F7FB274007519AE /* HNInputContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputContext.swift; path = InputMethod/HNInputContext.swift; sourceTree = "<group>"; };
 		0E16F6D62F7FB274007519AE /* HNInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputController.swift; path = InputMethod/HNInputController.swift; sourceTree = "<group>"; };
 		0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNUserDefaults.swift; path = InputMethod/HNUserDefaults.swift; sourceTree = "<group>"; };
+		0EDDEF7C2F8456A1001D5485 /* ATImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ATImport.swift; path = abbrevtool/ATImport.swift; sourceTree = "<group>"; };
+		0EDDEF7E2F845725001D5485 /* AEAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AEAppDelegate.swift; path = AbbrevEdit/AEAppDelegate.swift; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
@@ -310,7 +310,7 @@
 		CF3E863F0E0BE4C900F1116F /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				0E16F6B82F7FAFF4007519AE /* AEAppDelegate.swift */,
+				0EDDEF7E2F845725001D5485 /* AEAppDelegate.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -361,7 +361,7 @@
 		CFD961C60E16754D006710FF /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				0E16F6B42F7FAFCC007519AE /* ATImport.swift */,
+				0EDDEF7C2F8456A1001D5485 /* ATImport.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -530,8 +530,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0E16F6B92F7FAFF4007519AE /* AEAppDelegate.swift in Sources */,
 				0E16F6CD2F7FB1D5007519AE /* main.swift in Sources */,
+				0EDDEF7F2F845725001D5485 /* AEAppDelegate.swift in Sources */,
 				CF0576FB0E103B7400F8DA39 /* Abbrevs.xcdatamodel in Sources */,
 				0E16F6AE2F7FAFA8007519AE /* HNDataController.swift in Sources */,
 				0E16F6AF2F7FAFA8007519AE /* HNDebug.swift in Sources */,
@@ -546,7 +546,7 @@
 				0E16F6D12F7FB20A007519AE /* main.swift in Sources */,
 				0E16F6B02F7FAFA8007519AE /* HNDataController.swift in Sources */,
 				0E16F6B12F7FAFA8007519AE /* HNDebug.swift in Sources */,
-				0E16F6B52F7FAFCC007519AE /* ATImport.swift in Sources */,
+				0EDDEF7D2F8456A1001D5485 /* ATImport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
