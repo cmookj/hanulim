@@ -29,6 +29,9 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
     private(set) var handlesCapsLockAsShift:       Bool = false
     private(set) var commitsImmediately:           Bool = false
     private(set) var usesDecomposedUnicode:        Bool = false
+    /// When true, pressing ESC while a Hanulim Korean mode is active
+    /// automatically switches to Roman mode (useful for vi/vim users).
+    private(set) var switchesToRomanOnEsc:         Bool = false
 
     private enum Keys {
         static let smartQuotationMarks     = "usesSmartQuotationMarks"
@@ -36,6 +39,7 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
         static let capsLockAsShift         = "handlesCapsLockAsShift"
         static let commitsImmediately      = "commitsImmediately"
         static let decomposedUnicode       = "usesDecomposedUnicode"
+        static let switchesToRomanOnEsc    = "switchesToRomanOnEsc"
     }
 
     private override init() {
@@ -60,6 +64,7 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
         handlesCapsLockAsShift       = defaults.bool(forKey: Keys.capsLockAsShift)
         commitsImmediately           = defaults.bool(forKey: Keys.commitsImmediately)
         usesDecomposedUnicode        = defaults.bool(forKey: Keys.decomposedUnicode)
+        switchesToRomanOnEsc         = defaults.bool(forKey: Keys.switchesToRomanOnEsc)
     }
 
     @objc private func userDefaultsDidChange(_ notification: Notification) {

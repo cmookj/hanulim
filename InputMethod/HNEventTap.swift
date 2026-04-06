@@ -90,6 +90,24 @@ final class HNEventTap: @unchecked Sendable {
             }
         }
 
+        // ESC (keyCode 53, no modifiers): switch to Roman if the preference is
+        // enabled and a Hanulim Korean mode is currently active.
+        // The event is always passed through so vi/vim still receives it.
+        if keyCode == 53,
+           !flags.contains(.maskShift),
+           !flags.contains(.maskControl),
+           !flags.contains(.maskAlternate),
+           !flags.contains(.maskCommand),
+           HNUserDefaults.shared.switchesToRomanOnEsc {
+            DispatchQueue.main.async {
+                if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+                    HNLog("HNEventTap: ESC → switching to Roman mode")
+                    HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+                }
+            }
+        }
+        }
+
         // Attempt to create a consuming tap directly. This succeeds only when
         // the process is in the Accessibility trusted list.
         if let port = CGEvent.tapCreate(
@@ -158,15 +176,25 @@ final class HNEventTap: @unchecked Sendable {
     // MARK: - Private helpers
 
     private func isCurrentlyRomanMode() -> Bool {
-        guard let src = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
-              let ptr = TISGetInputSourceProperty(src, kTISPropertyInputSourceID) else {
-            return false
-        }
-        let id = Unmanaged<CFString>.fromOpaque(ptr).takeUnretainedValue() as String
-        return id == HNEventTap.romanModeID
+        return currentInputSourceID() == HNEventTap.romanModeID
     }
 
-    private func selectInputSource(id: String) {
+    /// True when a Hanulim Korean mode (not Roman) is the active input source.
+    func isCurrentlyKoreanHanulimMode() -> Bool {
+        let id = currentInputSourceID()
+        return id.hasPrefix("org.cocomelo.inputmethod.Hanulim.")
+            && id != HNEventTap.romanModeID
+    }
+
+    private func currentInputSourceID() -> String {
+        guard let src = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
+              let ptr = TISGetInputSourceProperty(src, kTISPropertyInputSourceID) else {
+            return ""
+        }
+        return Unmanaged<CFString>.fromOpaque(ptr).takeUnretainedValue() as String
+    }
+
+    func selectInputSource(id: String) {
         let filterDict = [kTISPropertyInputSourceID: id as CFString] as CFDictionary
         guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
               CFArrayGetCount(list) > 0,
