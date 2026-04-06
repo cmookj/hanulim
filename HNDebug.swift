@@ -24,7 +24,6 @@ private let hnLogURL = URL(fileURLWithPath: "/tmp/hanulim.log")
 private let hnLogQueue = DispatchQueue(label: "org.cocomelo.inputmethod.Hanulim.log")
 
 func HNLog(_ message: @autoclosure () -> String) {
-#if DEBUG
     let text = "\(Date()): \(message())\n"
     hnLogQueue.async {
         if let data = text.data(using: .utf8) {
@@ -37,5 +36,4 @@ func HNLog(_ message: @autoclosure () -> String) {
             }
         }
     }
-#endif
 }

@@ -77,7 +77,8 @@ final class HNEventTap: @unchecked Sendable {
                 && !flags.contains(.maskAlternate)
                 && !flags.contains(.maskCommand)
 
-            if shiftOnly && keyCode == 49 {
+            if shiftOnly && keyCode == 49
+                && HNUserDefaults.shared.usesShiftSpaceForRomanMode {
                 if HNEventTap.shared.isConsuming {
                     HNLog("HNEventTap: Shift+Space consumed by tap")
                     DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }

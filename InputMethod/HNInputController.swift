@@ -134,12 +134,16 @@ extension HNInputController {
         let rawFlags    = Int(bitPattern: UInt(event.modifierFlags.rawValue))
         let firstChar   = string.unicodeScalars.first?.value
 
+        let noModifiers = deviceFlags.intersection([.shift, .control, .option, .command]).isEmpty
+
         let isShiftOnly = deviceFlags.contains(.shift) &&
             !deviceFlags.contains(.control) &&
             !deviceFlags.contains(.option) &&
             !deviceFlags.contains(.command)
-        if isShiftOnly, keyCode == 49 {
+        if isShiftOnly, keyCode == 49,
+           HNUserDefaults.shared.usesShiftSpaceForRomanMode {
             // Shift+Space: toggle Roman (Latin bypass) mode.
+            // Only active when usesShiftSpaceForRomanMode is enabled.
             // When HNEventTap is active (Accessibility granted) this branch is
             // never reached because the event tap consumes Shift+Space before
             // any application — including Ghostty — sees it. This branch acts
@@ -148,6 +152,21 @@ extension HNInputController {
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             toggleRomanMode()
             sHandled = true
+        } else if noModifiers, keyCode == 53,
+                  HNUserDefaults.shared.switchesToRomanOnEsc,
+                  HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+            // ESC: switch to Roman mode as a side effect, but always pass the
+            // event through (return false) so vim/terminal apps still see ESC.
+            // The tap callback also handles this; this branch is a fallback when
+            // the tap is not installed, and is harmless when the tap is active
+            // because by the time this runs the async tap dispatch hasn't fired
+            // yet (so isCurrentlyKoreanHanulimMode() is still true here, but the
+            // second selectInputSource call will be a no-op since the mode will
+            // already be Roman).
+            HNLog("HNInputController: ESC → switching to Roman mode")
+            inputContext.commitComposition(client: sender as? (any IMKTextInput))
+            HNEventTap.shared.selectInputSource(id: "org.cocomelo.inputmethod.Hanulim.Roman")
+            sHandled = false  // always pass ESC through
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {
