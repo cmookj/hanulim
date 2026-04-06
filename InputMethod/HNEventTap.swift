@@ -23,20 +23,23 @@ import Carbon
 
 // MARK: - HNEventTap
 
-/// System-level CGEventTap that intercepts Shift+Space before any application
-/// sees the event. This is the general solution for apps (e.g. Ghostty) that
-/// process raw key events before calling the IME via NSTextInputClient: by
-/// consuming the event at the HID session tap level, no host application can
-/// pre-insert characters for the toggle keystroke.
+/// System-level CGEventTap that intercepts key events before any application
+/// sees them. Responsibilities:
 ///
-/// Requires Accessibility permission (System Settings → Privacy & Security →
-/// Accessibility). If permission is denied, `start()` returns without
-/// installing the tap and HNInputController.handle(_:client:) acts as fallback.
+/// - Shift+Space: toggles Roman/Korean mode. The event is *consumed* when a
+///   consuming tap is active (Accessibility granted) so that apps like Ghostty
+///   which process raw keys before calling the IME cannot pre-insert a space.
+///
+/// - ESC (when switchesToRomanOnEsc preference is on): switches to Roman mode
+///   without consuming the event, so vi/vim still receives ESC normally.
+///
+/// Requires Accessibility permission for the consuming tap
+/// (System Settings → Privacy & Security → Accessibility).
 final class HNEventTap: @unchecked Sendable {
 
     static let shared = HNEventTap()
 
-    private static let romanModeID  = "org.cocomelo.inputmethod.Hanulim.Roman"
+    private static let romanModeID       = "org.cocomelo.inputmethod.Hanulim.Roman"
     private static let defaultKoreanModeID = "org.cocomelo.inputmethod.Hanulim.2standard"
 
     /// Updated by HNInputController.setValue(_:forTag:client:) each time the
@@ -54,62 +57,58 @@ final class HNEventTap: @unchecked Sendable {
 
     // MARK: - Lifecycle
 
-    /// Install the event tap. Call once from main.swift after the run-loop is
-    /// ready. If the consuming tap cannot be created (Accessibility not yet
-    /// granted), prompts for permission and logs — the tap will activate on
-    /// the next launch after the user approves.
+    /// Install the event tap. Call once from main.swift before the run loop
+    /// starts. If the consuming tap cannot be created (Accessibility not yet
+    /// granted), prompts for permission — the tap activates on the next launch.
     func start() {
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
 
-        // The callback must be a C-compatible function (no captures).
-        // We access the singleton via HNEventTap.shared.
+        // The callback must be a C-compatible function pointer (no captures).
+        // Access the singleton directly via HNEventTap.shared.
         let callback: CGEventTapCallBack = { _, type, event, _ -> Unmanaged<CGEvent>? in
             guard type == .keyDown else { return Unmanaged.passRetained(event) }
 
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let flags   = event.flags
 
+            // ── Shift+Space (keyCode 49) ──────────────────────────────────
             let shiftOnly = flags.contains(.maskShift)
                 && !flags.contains(.maskControl)
                 && !flags.contains(.maskAlternate)
                 && !flags.contains(.maskCommand)
 
-            guard shiftOnly, keyCode == 49 else {
-                return Unmanaged.passRetained(event)
-            }
-
-            if HNEventTap.shared.isConsuming {
-                // Consuming tap: swallow the event so no app sees it, then toggle.
-                HNLog("HNEventTap: Shift+Space consumed by tap")
-                DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }
-                return nil
-            } else {
-                // Listen-only tap: just log; handle(_:client:) will do the toggle.
-                HNLog("HNEventTap: Shift+Space seen (listen-only, passing through)")
-                return Unmanaged.passRetained(event)
-            }
-        }
-
-        // ESC (keyCode 53, no modifiers): switch to Roman if the preference is
-        // enabled and a Hanulim Korean mode is currently active.
-        // The event is always passed through so vi/vim still receives it.
-        if keyCode == 53,
-           !flags.contains(.maskShift),
-           !flags.contains(.maskControl),
-           !flags.contains(.maskAlternate),
-           !flags.contains(.maskCommand),
-           HNUserDefaults.shared.switchesToRomanOnEsc {
-            DispatchQueue.main.async {
-                if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-                    HNLog("HNEventTap: ESC → switching to Roman mode")
-                    HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+            if shiftOnly && keyCode == 49 {
+                if HNEventTap.shared.isConsuming {
+                    HNLog("HNEventTap: Shift+Space consumed by tap")
+                    DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }
+                    return nil                          // consume — app never sees it
+                } else {
+                    HNLog("HNEventTap: Shift+Space seen (listen-only, passing through)")
+                    return Unmanaged.passRetained(event)
                 }
             }
-        }
+
+            // ── ESC (keyCode 53, no modifiers) ────────────────────────────
+            // Always pass through; only trigger a mode switch as a side effect.
+            let noModifiers = !flags.contains(.maskShift)
+                && !flags.contains(.maskControl)
+                && !flags.contains(.maskAlternate)
+                && !flags.contains(.maskCommand)
+
+            if keyCode == 53 && noModifiers
+                && HNUserDefaults.shared.switchesToRomanOnEsc {
+                DispatchQueue.main.async {
+                    if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+                        HNLog("HNEventTap: ESC → switching to Roman mode")
+                        HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+                    }
+                }
+            }
+
+            return Unmanaged.passRetained(event)
         }
 
-        // Attempt to create a consuming tap directly. This succeeds only when
-        // the process is in the Accessibility trusted list.
+        // Attempt to create a consuming tap (requires Accessibility).
         if let port = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
@@ -122,8 +121,7 @@ final class HNEventTap: @unchecked Sendable {
             return
         }
 
-        // Consuming tap failed.
-        // Consuming taps require Accessibility; request it if missing.
+        // Consuming tap failed — request Accessibility if not granted.
         let axTrusted = AXIsProcessTrusted()
         HNLog("HNEventTap: consuming tap failed (AXTrusted=\(axTrusted))")
         if !axTrusted {
@@ -132,7 +130,7 @@ final class HNEventTap: @unchecked Sendable {
             HNLog("HNEventTap: opened Accessibility pane — add Hanulim and restart")
         }
 
-        // Listen-only taps require Input Monitoring; request it if missing.
+        // Listen-only taps require Input Monitoring — request if missing.
         let listenOK = CGPreflightListenEventAccess()
         HNLog("HNEventTap: CGPreflightListenEventAccess=\(listenOK)")
         if !listenOK {
@@ -140,7 +138,6 @@ final class HNEventTap: @unchecked Sendable {
             HNLog("HNEventTap: opened Input Monitoring pane — add Hanulim and restart")
         }
 
-        // Try listen-only tap (diagnostics; does not consume events).
         if let port = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
@@ -173,10 +170,10 @@ final class HNEventTap: @unchecked Sendable {
         selectInputSource(id: targetID)
     }
 
-    // MARK: - Private helpers
+    // MARK: - Helpers
 
     private func isCurrentlyRomanMode() -> Bool {
-        return currentInputSourceID() == HNEventTap.romanModeID
+        currentInputSourceID() == HNEventTap.romanModeID
     }
 
     /// True when a Hanulim Korean mode (not Roman) is the active input source.
