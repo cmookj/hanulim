@@ -15,6 +15,10 @@ autoreleasepool {
     // modes (e.g. the Roman mode icon) without requiring a logout/login.
     TISRegisterInputSource(bundle.bundleURL as CFURL)
 
+    // Install the system-level event tap for Shift+Space mode toggle.
+    // Must be called before NSApplication.run() so the run loop is available.
+    HNEventTap.shared.start()
+
     let connectionName     = bundle.infoDictionary?["InputMethodConnectionName"] as! String
     let server             = IMKServer(name: connectionName, bundleIdentifier: bundle.bundleIdentifier)
     let candidatesController = HNCandidatesController(server: server!)

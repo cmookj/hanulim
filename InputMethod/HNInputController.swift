@@ -62,29 +62,12 @@ class HNInputController: IMKInputController {
 
 extension HNInputController {
 
+    // Delegate to HNEventTap.shared which reads TIS state directly (ground
+    // truth) rather than per-instance inputContext.isRomanMode, ensuring the
+    // toggle works correctly regardless of which controller instance is active.
     private func toggleRomanMode() {
-        // Roman mode is a registered input source (added in System Settings,
-        // just like 2standard or 3final). TISSelectInputSource switches to it,
-        // and the system calls setValue:forTag:client: which drives isRomanMode
-        // via setKeyboardLayout — no direct flag manipulation needed here.
-        let targetID = inputContext.isRomanMode
-            ? inputContext.lastKoreanModeID
-            : kRomanModeID
-        selectInputSource(id: targetID)
-    }
-
-    private func selectInputSource(id: String) {
-        let cfID = id as CFString
-        let filterDict = [kTISPropertyInputSourceID: cfID] as CFDictionary
-        guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
-              CFArrayGetCount(list) > 0,
-              let rawPtr = CFArrayGetValueAtIndex(list, 0) else {
-            HNLog("selectInputSource: not found: \(id)")
-            return
-        }
-        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
-        let err = TISSelectInputSource(source)
-        HNLog("selectInputSource: \(id) → OSStatus \(err)")
+        HNLog("HNInputController: toggleRomanMode called")
+        HNEventTap.shared.toggleRomanMode()
     }
 }
 
@@ -104,9 +87,12 @@ extension HNInputController {
     }
 
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
-        HNLog("HNInputController setValue: \(String(describing: value)) forTag: \(tag)")
         if tag == kTSMDocumentInputModePropertyTag, let name = value as? String {
+            HNLog("HNInputController setValue: mode=\(name)")
             inputContext.setKeyboardLayout(name: name)
+            if name != kRomanModeID {
+                HNEventTap.shared.lastKoreanModeID = name
+            }
         }
     }
 }
@@ -139,19 +125,15 @@ extension HNInputController {
             !deviceFlags.contains(.option) &&
             !deviceFlags.contains(.command)
         if isShiftOnly, keyCode == 49 {
-            // Shift+Space: toggle Roman (Latin bypass) mode
+            // Shift+Space: toggle Roman (Latin bypass) mode.
+            // When HNEventTap is active (Accessibility granted) this branch is
+            // never reached because the event tap consumes Shift+Space before
+            // any application — including Ghostty — sees it. This branch acts
+            // as a fallback when Accessibility permission has not been granted.
+            HNLog("HNInputController: Shift+Space in handle() — tapConsuming=\(HNEventTap.shared.isConsuming)")
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             toggleRomanMode()
             sHandled = true
-            // Ghostty processes Shift+Space before calling the IME, inserting
-            // an unwanted blank space into the PTY. Send DEL to remove it.
-            if let c = sender as? (any IMKTextInput),
-               c.bundleIdentifier() == "com.mitchellh.ghostty" {
-                c.insertText(
-                    "\u{7f}",
-                    replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
-                )
-            }
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {
