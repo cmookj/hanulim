@@ -199,20 +199,30 @@ struct HNCharacter {
       현재 조합 커밋 → false 반환 (앱이 처리)
 ```
 
-**`compose()` 자모 조합 알고리즘 (두벌식):**
+**`compose()` 조합 알고리즘:**
+
+`keyBuffer`에 쌓인 자소 코드를 순회하며 `HNCharacter`를 구성합니다. 두벌식(jamo)과 세벌식(jaso)은 아래와 같이 다르게 처리됩니다.
+
+두벌식(jamo) 전용 처리:
 
 ```
 새 자소 입력
  │
- ├─ [중성 뒤에 초성 입력] 종성 후보로 변환 시도
+ ├─ [초성 입력, 이미 중성 이후 상태] 종성 후보로 변환 시도
  │    hnJasoInitialToFinal[] 테이블로 초성→종성 변환
  │    기존 종성과 합성 가능하면 겹받침 구성
  │
- ├─ [완성 음절 뒤에 중성 입력] 분리 처리
- │    종성을 분리해 다음 음절의 초성으로 이동
- │    겹받침이면 한 자소만 분리
+ └─ [중성 입력, 이미 종성 있음] 분리 처리
+      종성을 떼어 다음 음절의 초성으로 이동
+      겹받침이면 마지막 자소만 분리
+```
+
+공통 처리 (두벌식·세벌식 공통):
+
+```
+새 자소 입력
  │
- ├─ [같은 종류의 자소] 합성 테이블 조회
+ ├─ [같은 종류의 자소 연속 입력] 합성 테이블 조회
  │    hnJasoCompositionIn/Out[] 으로 겹자음·겹모음 구성
  │    예: ㄱ + ㄱ → ㄲ,  ㅗ + ㅏ → ㅘ
  │
@@ -328,12 +338,14 @@ killall Hanulim
 
 ## 8. 디버그 로깅
 
-`HNDebug.swift`는 `/tmp/hanulim.log` 파일에 비동기로 로그를 기록합니다.
+`HNDebug.swift`는 `#if DEBUG` 빌드에서만 활성화됩니다. `NSLog`를 사용해 시스템 로그에 출력하며, Console.app에서 확인할 수 있습니다.
 
-로그를 확인하려면:
-
-```bash
-touch /tmp/hanulim.log
-killall Hanulim          # IME 프로세스 재시작
-tail -f /tmp/hanulim.log
+```swift
+func HNLog(_ message: @autoclosure () -> String) {
+#if DEBUG
+    NSLog("%@", message())
+#endif
+}
 ```
+
+릴리스 빌드에서는 `HNLog` 호출이 완전히 제거됩니다.
