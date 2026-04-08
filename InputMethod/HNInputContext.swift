@@ -9,6 +9,9 @@ import InputMethodKit
 
 // MARK: - Protocol
 
+/// The subset of user preferences that HNInputContext needs.
+/// Declared as a protocol so HNInputContext does not depend directly on
+/// HNUserDefaults, making it easier to test in isolation.
 protocol HNICUserDefaults: AnyObject {
     var usesSmartQuotationMarks: Bool { get }
     var inputsBackSlashInsteadOfWon: Bool { get }
@@ -19,36 +22,64 @@ protocol HNICUserDefaults: AnyObject {
 
 // MARK: - Constants
 
+/// Number of macOS virtual key code entries in each keyboard layout value table.
+/// Covers key codes 0–50 (the alphanumeric/punctuation area of the keyboard).
 private let hnKeyCodeMax = 51
+
+/// Maximum number of unconsumed jaso codes that can accumulate before the
+/// current syllable is forcibly committed. In practice a syllable never exceeds
+/// a handful of codes; this guards against unbounded growth.
 private let hnBufferSize = 1024
 
 // MARK: - Enums
 
+/// Distinguishes the two fundamentally different input schemes:
+/// - `jamo`:  두벌식 — initial and final consonants share the same keys;
+///            the automaton decides role (초성 vs 종성) from context.
+/// - `jaso`:  세벌식 — initial, medial, and final positions each have
+///            dedicated keys; no ambiguity.
 private enum HNKeyboardLayoutType: Int {
     case jamo = 0
     case jaso
 }
 
+/// Whether the layout supports only contemporary Hangul (modern) or also
+/// archaic jaso used in classical Korean text (archaic).
 private enum HNKeyboardLayoutScope: Int {
     case modern = 0
     case archaic
 }
 
+/// The role of a 16-bit key conversion code stored in the layout table.
+/// The upper byte of a `UInt16` key code is the type; the lower byte is the
+/// jaso index within its type's Unicode table.
 private enum HNKeyType: Int {
-    case symbol = 0
-    case initial = 1
-    case medial = 2
-    case final_ = 3
-    case diacritic = 4
+    case symbol   = 0  // punctuation / special character
+    case initial  = 1  // 초성 (leading consonant)
+    case medial   = 2  // 중성 (vowel)
+    case final_   = 3  // 종성 (trailing consonant)
+    case diacritic = 4 // 방점 (dot tone mark, used in archaic Korean)
 }
 
 // MARK: - Key Code Helpers
 
+/// Extracts the key type from a 16-bit key conversion code (upper byte).
 private func hnKeyType(_ conv: UInt16) -> Int  { Int(conv >> 8) }
+/// Extracts the jaso index from a 16-bit key conversion code (lower byte).
 private func hnKeyValue(_ conv: UInt16) -> UInt8 { UInt8(conv & 0xff) }
 
 // MARK: - Keyboard Layout
 
+/// Describes a single keyboard layout (자판).
+///
+/// `value` is an array of `hnKeyCodeMax` (51) 32-bit entries, one per macOS
+/// virtual key code (0–50). Each 32-bit entry packs two 16-bit key conversion
+/// codes:
+///   - upper 16 bits: the code produced when Shift (or CapsLock-as-Shift) is held
+///   - lower 16 bits: the unshifted code
+///
+/// Each 16-bit code encodes: `(HNKeyType << 8) | jasoIndex`
+/// A value of 0x0000 means the key produces no Hangul output for that layout.
 private struct HNKeyboardLayout {
     let name: String
     let type: HNKeyboardLayoutType
@@ -58,6 +89,12 @@ private struct HNKeyboardLayout {
 
 // MARK: - Jaso Composition
 
+/// Lookup table for combining two jaso of the same type into a compound jaso.
+/// Examples: ㄱ+ㄱ→ㄲ (initial), ㅗ+ㅏ→ㅘ (medial), ㄱ+ㅅ→ㄳ (final).
+///
+/// `input` stores pairs encoded as `(v1 << 8) | v2` (UInt16).
+/// `output` stores the resulting compound jaso index (UInt8).
+/// `counts` separates how many entries are valid for modern vs archaic scope.
 private struct HNJasoComposition {
     /// counts[0] = modern count, counts[1] = archaic count
     let counts: [Int]
@@ -69,7 +106,18 @@ private struct HNJasoComposition {
 
 // MARK: - Character
 
+/// Represents a single Hangul syllable block being assembled.
+///
+/// `type` records the highest component added so far, matching `HNKeyType`:
+///   0 = nothing composed yet
+///   1 = initial consonant (초성) set
+///   2 = vowel (중성) set
+///   3 = final consonant (종성) set
+///
+/// Each component field holds a jaso index into the corresponding Unicode table,
+/// or `nilValue` (0xff) when not yet set.
 private struct HNCharacter {
+    /// Sentinel meaning "not set" for any component field.
     static let nilValue: UInt8 = 0xff
 
     var type:      UInt8 = 0
@@ -78,7 +126,8 @@ private struct HNCharacter {
     var final_:    UInt8 = nilValue
     var diacritic: UInt8 = nilValue
 
-    /// CH_VAL[index] – index 0=type, 1=initial, 2=medial, 3=final, 4=diacritic
+    /// Indexed access by HNKeyType raw value (0=type, 1=initial, 2=medial,
+    /// 3=final, 4=diacritic). Used in table-driven composition loops.
     subscript(index: Int) -> UInt8 {
         get {
             switch index {
@@ -119,6 +168,8 @@ private struct HNCharacter {
 
 // MARK: - Keyboard Layout Table
 
+/// All supported keyboard layouts. `HNInputContext.setKeyboardLayout(name:)`
+/// selects one entry by matching the input source ID stored in Info.plist.
 private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.2standard",
@@ -466,6 +517,11 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
 
 // MARK: - Jaso Initial → Final Conversion Table
 
+/// Maps a 두벌식 initial consonant index to its equivalent final consonant
+/// (종성) index, used when an initial consonant typed after a vowel is
+/// reinterpreted as the trailing consonant of the current syllable.
+/// An entry of 0x00 means the initial has no corresponding final form
+/// (the key is not usable as 종성 in modern Hangul; archaic forms are included).
 private let hnJasoInitialToFinal: [UInt8] = [
     0x00, // 00
     0x01, // 01 ㄱ
@@ -596,6 +652,13 @@ private let hnJasoInitialToFinal: [UInt8] = [
 
 // MARK: - Jaso Composition Tables
 
+// Each composition table has a parallel In/Out array pair.
+// `In` stores pairs (v1 << 8 | v2) — the two jaso indices being combined.
+// `Out` stores the resulting compound jaso index.
+// The first N entries of each table cover modern Hangul; the remaining entries
+// extend coverage to archaic jaso. `HNJasoComposition.counts` records where
+// the modern section ends for each key type.
+
 private let hnJasoCompositionInInitial: [UInt16] = [
     0x0101, 0x0404, 0x0808, 0x0a0a, 0x0d0d,
     // archaic
@@ -703,6 +766,12 @@ private let hnJasoCompositionTable: [HNJasoComposition] = [
 
 // MARK: - Unicode Tables
 
+// These tables map internal jaso indices to Unicode code points.
+// `hnUnicodeSymbol`  — punctuation and special characters
+// `hnUnicodeJamoInitial/Medial/Final` — compatibility Jamo (U+3130–) for NFC
+// `hnUnicodeJasoInitial/Medial/Final` — syllable Jamo (U+1100–) for NFD (첫가끝)
+
+/// Maximum valid symbol index in hnUnicodeSymbol.
 private let hnUnicodeSymbolMax = 0x30
 
 private let hnUnicodeSymbol: [UInt16] = [
@@ -1226,25 +1295,53 @@ private let hnHandlableMask: UInt = {
 
 // MARK: - HNInputContext
 
+/// The Korean composition engine. One instance lives inside each
+/// `HNInputController`. It maintains the jaso key buffer and the partially
+/// assembled syllable, and drives the Unicode output via IMKit's text client.
+///
+/// Lifecycle:
+///   1. `setKeyboardLayout(name:)` — called by HNInputController.setValue when
+///      the input source changes; selects the active layout from the table.
+///   2. `handleKey(...)` — called for every key-down event; returns true if the
+///      key was consumed (the app should not process it further).
+///   3. `commitComposition(client:)` — flushes any pending partial syllable to
+///      the text field (called on focus loss, mouse click, etc.).
 class HNInputContext {
 
+    /// The currently active keyboard layout, or nil before the first
+    /// `setValue` callback from IMKit.
     private var keyboardLayout: HNKeyboardLayout?
+
+    /// User preference settings; injected by HNInputController after init.
     var userDefaults: (any HNICUserDefaults)?
 
+    /// The string currently displayed as marked (pre-edit) text in the client.
+    /// Non-nil while a syllable is being assembled; nil otherwise.
     var composedString: String?
 
+    /// Smart quotation mark state: alternates between open (1) and close (0)
+    /// with each successive quote keystroke.
     private var singleQuot: Int = 1
     private var doubleQuot: Int = 1
 
+    /// Ring buffer of 16-bit key conversion codes for the current syllable.
+    /// Each entry encodes `(HNKeyType << 8) | jasoIndex`. The buffer is
+    /// replayed by `compose()` on every new keystroke.
     private var keyBuffer: [UInt16] = []
 
     // MARK: - Public API
 
+    /// Selects the keyboard layout matching `name` (an input source ID such as
+    /// `org.cocomelo.inputmethod.Hanulim.3final`). Resets no composition state;
+    /// any in-progress syllable is recomposed with the new layout on the next
+    /// `handleKey` call.
     func setKeyboardLayout(name: String) {
         keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
     }
 
-    // Returns true if the key was handled.
+    /// Processes a single key-down event. Returns `true` if the key was
+    /// consumed by the composition engine; `false` if it should be passed
+    /// through to the application.
     func handleKey(string: String, keyCode: Int, modifiers: Int, client: (any IMKTextInput)?) -> Bool {
         let couldHandle = self.couldHandle(modifiers: modifiers)
         let keyConv: UInt16 = couldHandle ? keyboardCode(keyCode: keyCode, modifiers: modifiers) : 0
@@ -1339,10 +1436,16 @@ class HNInputContext {
 
     // MARK: - Private: Key handling helpers
 
+    /// Returns true when the modifier combination allows Korean composition.
+    /// Control, Command, and Option (when used as a modifier) block composition;
+    /// Shift and CapsLock (optionally) are handled specially.
     private func couldHandle(modifiers: Int) -> Bool {
         return (UInt(bitPattern: modifiers) & hnHandlableMask) == 0
     }
 
+    /// Looks up the 16-bit key conversion code for a given key code and
+    /// modifier state. Returns 0 if the key is not mapped in the current layout
+    /// or the mapped symbol has no valid Unicode representation.
     private func keyboardCode(keyCode: Int, modifiers: Int) -> UInt16 {
         guard let layout = keyboardLayout else { return 0 }
 
@@ -1366,6 +1469,9 @@ class HNInputContext {
 
     // MARK: - Private: Jaso composition
 
+    /// Attempts to combine two jaso of the same `type` (initial, medial, or
+    /// final) into a compound jaso. Returns the compound index, or
+    /// `HNCharacter.nilValue` if no such combination exists in the current scope.
     private func jasoCompose(type: Int, v1: UInt8, v2: UInt8) -> UInt8 {
         guard type >= HNKeyType.initial.rawValue, type <= HNKeyType.final_.rawValue else {
             return HNCharacter.nilValue
@@ -1383,7 +1489,20 @@ class HNInputContext {
 
     // MARK: - Private: Character composition
 
-    /// Produces the Unicode code units for a composed HNCharacter.
+    /// Converts an assembled `HNCharacter` into one or more Unicode UTF-16
+    /// code units.
+    ///
+    /// Two output forms are supported:
+    ///
+    /// **NFC** (default): emits a single precomposed syllable block from the
+    ///   Hangul Syllables range (U+AC00–U+D7A3).
+    ///   Formula: U+AC00 + (initial−1)×588 + (medial−1)×28 + final
+    ///   Partial syllables (no medial) fall back to compatibility jamo (U+3130–).
+    ///
+    /// **NFD** (첫가끝 / `usesDecomposedUnicode`): emits separate leading,
+    ///   vowel, and trailing jamo from the Hangul Jamo block (U+1100–U+11FF).
+    ///   Also used unconditionally for archaic (옛한글) layouts, since archaic
+    ///   syllables have no precomposed representations in Unicode.
     private func composeCharacter(_ char: HNCharacter) -> [UInt16] {
         let maxNFC: [UInt8] = [0x00, 0x13, 0x15, 0x1b]
         let maxNFD: [UInt8] = [0x00, 0x7c, 0x5e, 0x89]
@@ -1448,6 +1567,8 @@ class HNInputContext {
         }
     }
 
+    /// Converts a straight quote character (0x27 or 0x22) to a typographic
+    /// "smart" quote, alternating between open and close on successive presses.
     private func quotationMark(for char: UInt16) -> UInt16 {
         let singleQuots: [UInt16] = [0x2018, 0x2019]
         let doubleQuots: [UInt16] = [0x201c, 0x201d]
@@ -1464,6 +1585,10 @@ class HNInputContext {
 
     // MARK: - Private: Buffer commit
 
+    /// Inserts `chars` as text into the client and removes the first
+    /// `processedKeyCount` entries from `keyBuffer` (those keys have been
+    /// consumed by the output). Used when `commitsImmediately` is enabled
+    /// to flush each completed syllable mid-stream.
     private func commitBuffer(client: (any IMKTextInput)?, chars: [UInt16], processedKeyCount: Int) {
         if processedKeyCount > 0 {
             keyBuffer.removeFirst(min(processedKeyCount, keyBuffer.count))
@@ -1476,6 +1601,19 @@ class HNInputContext {
 
     // MARK: - Private: Main composition loop
 
+    /// Replays the entire `keyBuffer` from scratch, building `composedString`
+    /// (the pre-edit / marked text shown underlined in the text field).
+    ///
+    /// This full-replay approach keeps the algorithm simple: every new keystroke
+    /// just appends to the buffer and calls `compose()`, rather than trying to
+    /// incrementally patch the current syllable state.
+    ///
+    /// The loop walks the buffer one code at a time, maintaining a single
+    /// `HNCharacter` workspace:
+    ///   - 두벌식 (jamo): initial consonants may be reinterpreted as 종성 if
+    ///     they follow a 중성; a later 중성 can split a 종성 back to 초성.
+    ///   - Both layouts: pairs of the same jaso type are merged via the
+    ///     composition tables (e.g. ㄱ+ㄱ→ㄲ, ㅗ+ㅏ→ㅘ).
     private func compose(client: (any IMKTextInput)?) {
         var char = HNCharacter()
         var charBuffer = [UInt16]()
