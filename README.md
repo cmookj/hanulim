@@ -181,14 +181,19 @@ struct HNCharacter {
 ```
 키 입력
  │
- ├─ 로마자 모드: 그대로 통과 (조합 없음)
- ├─ Ctrl/Cmd/Option 수식키 조합: 통과
+ ├─ Ctrl/Cmd/Option 수식키 조합 (couldHandle = false):
+ │    keyConv = 0으로 처리 → 조합 커밋 → false 반환 (앱이 처리)
  │
- ├─ 기호 키:
- │    현재 조합 커밋 → 기호 직접 삽입
+ ├─ 기호 키 (keyConv != 0, type == symbol):
+ │    현재 조합 커밋 → 기호 직접 삽입 → true 반환
  │
- ├─ 한글 자소:
- │    keyBuffer에 추가 → compose() 실행 → 조합 미리보기 갱신
+ ├─ 한글 자소 (keyConv != 0, type != symbol):
+ │    keyBuffer에 추가 → compose() 실행 → 조합 미리보기 갱신 → true 반환
+ │
+ ├─ 조합 중 특수키 (couldHandle = true, keyBuffer 비어있지 않음):
+ │    Delete: 마지막 자소 제거 후 재조합 → true 반환
+ │    Tab (Terminal 한정): 조합 커밋 → false 반환
+ │    화살표 (Word 한정): 조합 커밋 → true 반환
  │
  └─ 그 외 (Space, Return 등):
       현재 조합 커밋 → false 반환 (앱이 처리)
