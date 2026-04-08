@@ -43,17 +43,17 @@ Xcode 프로젝트는 세 개의 타겟으로 구성됩니다.
 ```
 hanulim/
 ├── InputMethod/
-│   ├── main.swift                  부트스트랩 진입점
-│   ├── HNInputController.swift     IMK 컨트롤러 (키 이벤트 수신·분기)
-│   ├── HNInputContext.swift        한글 오토마타
-│   ├── HNCandidates.swift          약어 후보 데이터 모델
-│   ├── HNCandidatesController.swift 약어 후보 패널 관리
-│   ├── HNAppController.swift       메뉴 공급자
-│   ├── HNUserDefaults.swift        사용자 환경설정 래퍼
-│   └── Info.plist                  입력 소스·자판 등록
-├── HNDataController.swift          CoreData 스택 (약어 DB)
-├── HNDebug.swift                   디버그 로깅 유틸리티
-└── *.png                           메뉴 막대 아이콘 자산
+│   ├── main.swift                   부트스트랩 진입점
+│   ├── HNInputController.swift      IMK 컨트롤러 (키 이벤트 수신, 분기)
+│   ├── HNInputContext.swift         한글 오토마타
+│   ├── HNCandidates.swift           약어 데이터 모델
+│   ├── HNCandidatesController.swift 약어 패널 컨트롤러
+│   ├── HNAppController.swift        메뉴 컨트롤러
+│   ├── HNUserDefaults.swift         사용자 환경설정
+│   └── Info.plist                   입력 소스, 자판 등록
+├── HNDataController.swift           CoreData 스택 (약어 DB)
+├── HNDebug.swift                    디버그 로깅 유틸리티
+└── *.png                            메뉴 막대 아이콘 리소스
 ```
 
 ---
@@ -94,7 +94,8 @@ macOS 이벤트 큐
 
 ### HNInputController
 
-`IMKInputController`를 상속한 핵심 클래스입니다. IMK가 각 클라이언트 앱의 포커스 변경마다 인스턴스를 생성합니다.
+`IMKInputController`를 상속한 핵심 클래스입니다.
+IMK가 각 클라이언트 앱의 포커스 변경마다 인스턴스를 생성합니다.
 
 #### 주요 메서드
 
@@ -147,7 +148,7 @@ mask = [.keyDown]
 
 **자모(Jamo) 방식**: 두벌식처럼 초성·종성을 같은 키로 입력하며, 위치에 따라 자동으로 초성/종성을 결정합니다.
 
-**자소(Jaso) 방식**: 세벌식처럼 초성·중성·종성 자리를 별도의 키로 명시적으로 입력합니다.
+**자소(Jaso) 방식**: 세벌식처럼 초성·중성·종성 자리를 별도의 키로 입력합니다.
 
 ### 자판 배열 데이터 구조
 
@@ -160,7 +161,8 @@ struct HNKeyboardLayout {
 }
 ```
 
-각 `value` 항목은 32비트 값으로, 상위 16비트는 Shift 입력 시, 하위 16비트는 일반 입력 시의 코드입니다. 16비트 코드에서 상위 바이트는 키 종류(0=기호, 1=초성, 2=중성, 3=종성, 4=방점), 하위 바이트는 해당 자소의 인덱스입니다.
+각 `value` 항목은 32비트 값으로, 상위 16비트는 Shift 입력 시, 하위 16비트는 일반 입력 시의 코드입니다.
+16비트 코드에서 상위 바이트는 키 종류(0=기호, 1=초성, 2=중성, 3=종성, 4=방점), 하위 바이트는 해당 자소의 인덱스입니다.
 
 ### 한글 오토마타
 
@@ -201,7 +203,8 @@ struct HNCharacter {
 
 **`compose()` 조합 알고리즘:**
 
-`keyBuffer`에 쌓인 자소 코드를 순회하며 `HNCharacter`를 구성합니다. 두벌식(jamo)과 세벌식(jaso)은 아래와 같이 다르게 처리됩니다.
+`keyBuffer`에 쌓인 자소 코드를 순회하며 `HNCharacter`를 구성합니다.
+두벌식(jamo)과 세벌식(jaso)은 아래와 같이 다르게 처리됩니다.
 
 두벌식(jamo) 전용 처리:
 
@@ -278,7 +281,8 @@ NFC 완성형 공식: `U+AC00 + (초성−1)×588 + (중성−1)×28 + 종성`
 
 **`HNCandidates`**: 단일 약어에 대한 후보 목록과 주석 맵을 보관합니다.
 
-**`HNCandidatesController`**: IMKCandidates 패널과 CoreData 검색 요청을 관리하는 싱글턴입니다. `IMKServer` 초기화 시 생성되며 앱 종료 시까지 유지됩니다.
+**`HNCandidatesController`**: IMKCandidates 패널과 CoreData 검색 요청을 관리하는 싱글턴입니다.
+`IMKServer` 초기화 시 생성되며 앱 종료 시까지 유지됩니다.
 
 **`HNDataController`**: CoreData 퍼시스턴트 스토어 코디네이터와 매니지드 오브젝트 컨텍스트를 관리하는 싱글턴입니다.
 
@@ -327,7 +331,7 @@ NFC 완성형 공식: `U+AC00 + (초성−1)×588 + (중성−1)×28 + 종성`
 | `commitsImmediately` | 음절 완성 즉시 삽입 (조합 중 상태 없음) |
 | `usesDecomposedUnicode` | NFD 자소 분리 유니코드 사용 |
 
-설정은 `defaults` 명령으로 변경하고 `killall Hanulim`으로 재시작하면 즉시 반영됩니다.
+설정은 터미널에서 `defaults` 명령으로 변경하고 `killall Hanulim`으로 재시작하면 즉시 반영됩니다.
 
 ```bash
 defaults write org.cocomelo.inputmethod.Hanulim usesSmartQuotationMarks -bool true
@@ -338,7 +342,8 @@ killall Hanulim
 
 ## 8. 디버그 로깅
 
-`HNDebug.swift`는 `#if DEBUG` 빌드에서만 활성화됩니다. `NSLog`를 사용해 시스템 로그에 출력하며, Console.app에서 확인할 수 있습니다.
+`HNDebug.swift`는 `#if DEBUG` 빌드에서만 활성화됩니다.
+`NSLog`를 사용해 시스템 로그에 출력하며, Console.app에서 확인할 수 있습니다.
 
 ```swift
 func HNLog(_ message: @autoclosure () -> String) {
