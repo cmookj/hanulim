@@ -1,7 +1,7 @@
 /*
  * Hanulim
  *
- * http://code.google.com/p/hanulim
+ * Original Objective-C code - https://github.com/han9kin/hanulim
  */
 
 import CoreData
