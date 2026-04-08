@@ -48,7 +48,7 @@ hanulim/
 │   ├── HNInputContext.swift         한글 오토마타
 │   ├── HNCandidates.swift           약어 데이터 모델
 │   ├── HNCandidatesController.swift 약어 패널 컨트롤러
-│   ├── HNAppController.swift        메뉴 컨트롤러
+│   ├── HNAppController.swift        App 컨트롤러
 │   ├── HNUserDefaults.swift         사용자 환경설정
 │   └── Info.plist                   입력 소스, 자판 등록
 ├── HNDataController.swift           CoreData 스택 (약어 DB)
