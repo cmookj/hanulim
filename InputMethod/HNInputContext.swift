@@ -171,6 +171,8 @@ private struct HNCharacter {
 /// All supported keyboard layouts. `HNInputContext.setKeyboardLayout(name:)`
 /// selects one entry by matching the input source ID stored in Info.plist.
 private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
+    // 두벌식 표준 — KS X 5002 표준 두벌식 자판.
+    // 자모(jamo) 방식: 같은 키가 초성/종성으로 공유됨.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.2standard",
         type: .jamo, scope: .modern,
@@ -228,6 +230,7 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
             0x002a0026, // `  (50)
         ]
     ),
+    // 두벌식 옛한글 — 옛한글 자모를 포함한 두벌식 확장 자판.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.2archaic",
         type: .jamo, scope: .archaic,
@@ -285,6 +288,9 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
             0x002a0026, // `  (50)
         ]
     ),
+    // 세벌식 최종 — 공병우 박사의 세벌식 최종 자판 (1990).
+    // 자소(jaso) 방식: 초성·중성·종성이 별도 키에 배치됨.
+    // Shift를 사용해 확장 한글 자소(16개 키)에 접근함.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.3final",
         type: .jaso, scope: .modern,
@@ -342,6 +348,8 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
             0x002e000a, // `  (50)
         ]
     ),
+    // 세벌식 390 — 공병우 박사의 세벌식 390 자판.
+    // 세벌식 최종과 유사하나 일부 자소 배치가 다름.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.390",
         type: .jaso, scope: .modern,
@@ -399,6 +407,11 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
             0x002a0026, // `  (50)
         ]
     ),
+    // 세벌식 무확장 (3noshift) — Shift 없이 현대 한글 전체를 입력할 수 있는 세벌식 자판.
+    // 레이아웃 분석 결과: Shift를 눌러야만 입력되는 한글 자소가 한 개도 없음.
+    // Shift 입력 시 일반 ASCII 기호만 생성되며, 7개 키는 Shifted/Unshifted 모두
+    // 동일한 자소를 산출함 (e.g. 0x03150315). 현대 한글에 필요한 모든 자소가
+    // 언쉬프트 레이어에 배치되어 있어 Shift 확장이 불필요함.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.3noshift",
         type: .jaso, scope: .modern,
@@ -456,6 +469,7 @@ private let hnKeyboardLayoutTable: [HNKeyboardLayout] = [
             0x002a0026, // `  (50)
         ]
     ),
+    // 세벌식 393 — 옛한글 자소를 포함한 세벌식 확장 자판.
     HNKeyboardLayout(
         name: "org.cocomelo.inputmethod.Hanulim.393",
         type: .jaso, scope: .archaic,
