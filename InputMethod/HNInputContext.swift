@@ -1244,6 +1244,12 @@ class HNInputContext {
 
     private static let romanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
 
+    /// Process-wide flag: true while any HNInputContext has an in-progress
+    /// syllable (composedString ≠ nil). Written on the main thread; read by
+    /// the CGEventTap callback thread. A momentarily stale read is acceptable
+    /// — the worst case is one unnecessary ESC pass-through.
+    nonisolated(unsafe) static var isComposing: Bool = false
+
     private var keyboardLayout: HNKeyboardLayout?
     var userDefaults: (any HNICUserDefaults)?
 
@@ -1363,6 +1369,7 @@ class HNInputContext {
 
         composedString = nil
         keyBuffer.removeAll()
+        HNInputContext.isComposing = false
     }
 
     func updateComposition(client: (any IMKTextInput)?) {
@@ -1379,6 +1386,7 @@ class HNInputContext {
     func cancelComposition() {
         composedString = nil
         keyBuffer.removeAll()
+        HNInputContext.isComposing = false
     }
 
     // MARK: - Private: Key handling helpers
@@ -1646,5 +1654,6 @@ class HNInputContext {
         charBuffer.append(contentsOf: composeCharacter(char))
         composedString = charBuffer.isEmpty ? nil
             : String(utf16CodeUnits: charBuffer, count: charBuffer.count)
+        HNInputContext.isComposing = composedString != nil
     }
 }

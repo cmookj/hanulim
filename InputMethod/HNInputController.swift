@@ -30,6 +30,16 @@ class HNInputController: IMKInputController {
     private let inputContext = HNInputContext()
     private var currentCandidates: HNCandidates?
 
+    /// The most recently active controller instance. Used by the CGEventTap
+    /// to commit composition and trigger mode-switch from off the main thread.
+    /// Only written on the main thread; reading from the tap thread is safe
+    /// for the same reason as HNInputContext.isComposing.
+    nonisolated(unsafe) static weak var active: HNInputController?
+
+    /// The client passed to the most recent handle(_:client:) call. Stored so
+    /// that commitForEsc() can reach the client without a handle() argument.
+    private weak var activeClient: AnyObject?
+
     // MARK: - Lifecycle
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
@@ -69,6 +79,19 @@ class HNInputController: IMKInputController {
     override func menu() -> NSMenu! {
         HNLog("HNInputController menu")
         return HNAppController.shared?.menu
+    }
+}
+
+// MARK: - ESC composition commit (called from event tap)
+
+extension HNInputController {
+
+    /// Called by HNEventTap when it has already consumed an ESC event and needs
+    /// to commit any in-progress composition before posting a synthetic ESC.
+    /// Must be called on the main thread.
+    func commitForEsc() {
+        let client = activeClient as? (any IMKTextInput)
+        inputContext.commitComposition(client: client)
     }
 }
 
@@ -123,6 +146,10 @@ extension HNInputController {
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
         guard event.type == .keyDown else { return false }
 
+        // Keep the tap-accessible references current so commitForEsc() works.
+        HNInputController.active = self
+        activeClient = sender as AnyObject?
+
         HNLog("HNInputController handle: keyCode=\(event.keyCode) modifiers=\(event.modifierFlags.rawValue)")
 
         var sHandled        = false
@@ -155,13 +182,21 @@ extension HNInputController {
         } else if noModifiers, keyCode == 53,
                   HNUserDefaults.shared.switchesToRomanOnEsc,
                   HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-            // ESC: commit any in-progress composition, switch to Roman mode,
-            // and pass the original ESC through so that the application
-            // (e.g. vim/neovim) receives it and exits insert mode.
-            HNLog("HNInputController: ESC → switching to Roman mode")
+            // ESC fallback — only reached when the event tap is NOT installed
+            // (no Accessibility permission). When the tap IS running, it
+            // consumes ESC for the composing case and posts a synthetic ESC
+            // after the preedit is cleared; for the non-composing case it
+            // passes ESC through and schedules the mode switch asynchronously.
+            // Here we handle both sub-cases ourselves:
+            //   • Not composing: commit (no-op), switch, pass through.
+            //   • Composing: commit, switch, pass through and rely on the
+            //     client (VimR works; terminal emulators may still need a
+            //     second ESC because they use the preedit state at event-
+            //     arrival time to decide whether to forward ESC to the PTY).
+            HNLog("HNInputController: ESC (tap not active) → switching to Roman mode")
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             HNEventTap.shared.selectInputSource(id: "org.cocomelo.inputmethod.Hanulim.Roman")
-            sHandled = false  // always pass ESC through
+            sHandled = false  // pass ESC through in all cases
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {

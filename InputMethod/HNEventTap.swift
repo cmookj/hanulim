@@ -90,18 +90,47 @@ final class HNEventTap: @unchecked Sendable {
             }
 
             // ── ESC (keyCode 53, no modifiers) ────────────────────────────
-            // Always pass through; only trigger a mode switch as a side effect.
             let noModifiers = !flags.contains(.maskShift)
                 && !flags.contains(.maskControl)
                 && !flags.contains(.maskAlternate)
                 && !flags.contains(.maskCommand)
 
             if keyCode == 53 && noModifiers
-                && HNUserDefaults.shared.switchesToRomanOnEsc {
-                DispatchQueue.main.async {
-                    if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-                        HNLog("HNEventTap: ESC → switching to Roman mode")
+                && HNUserDefaults.shared.switchesToRomanOnEsc
+                && HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+
+                if HNInputContext.isComposing {
+                    // A syllable is being composed. Terminal emulators intercept
+                    // ESC when preedit text is active and never forward it to the
+                    // PTY — even if the IME's handle() returns false. The only
+                    // reliable fix is to consume the original ESC here (before any
+                    // app sees it), commit the composition, switch mode, then post
+                    // a synthetic ESC that arrives with no preedit in flight.
+                    HNLog("HNEventTap: ESC during composition — consuming and will synthesize")
+                    DispatchQueue.main.async {
+                        // Commit the in-progress syllable into the client.
+                        HNInputController.active?.commitForEsc()
+                        // Switch to Roman input source.
                         HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+                        // Post a synthetic ESC. The preedit is now cleared and
+                        // the input source is Roman, so terminal emulators will
+                        // forward it through the PTY to the running application.
+                        let src = CGEventSource(stateID: .hidSystemState)
+                        let dn  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: true)
+                        let up  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: false)
+                        dn?.post(tap: .cgAnnotatedSessionEventTap)
+                        up?.post(tap: .cgAnnotatedSessionEventTap)
+                        HNLog("HNEventTap: posted synthetic ESC after composition commit")
+                    }
+                    return nil  // consume original; synthetic follows on next run loop
+                } else {
+                    // No composition in progress: switch mode asynchronously and
+                    // pass the original ESC through so the app sees it immediately.
+                    HNLog("HNEventTap: ESC (no composition) — passing through, switching mode")
+                    DispatchQueue.main.async {
+                        if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+                            HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+                        }
                     }
                 }
             }
