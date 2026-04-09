@@ -45,18 +45,18 @@ Xcode 프로젝트는 세 개의 타겟으로 구성됩니다.
 ```
 hanulim/
 ├── InputMethod/
-│   ├── main.swift                  부트스트랩 진입점
-│   ├── HNInputController.swift     IMK 컨트롤러 (키 이벤트 수신·분기)
-│   ├── HNInputContext.swift        한글 오토마타
-│   ├── HNEventTap.swift            Shift+Space 전역 인터셉터 (CGEventTap)
-│   ├── HNCandidates.swift          약어 후보 데이터 모델
+│   ├── main.swift                   부트스트랩 진입점
+│   ├── HNInputController.swift      IMK 컨트롤러 (키 이벤트 수신, 분기)
+│   ├── HNInputContext.swift         한글 오토마타
+│   ├── HNEventTap.swift             전역 키 인터셉터 (CGEventTap; Shift+Space, ESC)
+│   ├── HNCandidates.swift           약어 후보 데이터 모델
 │   ├── HNCandidatesController.swift 약어 후보 패널 관리
-│   ├── HNAppController.swift       메뉴 공급자
-│   ├── HNUserDefaults.swift        사용자 환경설정 래퍼
-│   └── Info.plist                  입력 소스·자판 등록
-├── HNDataController.swift          CoreData 스택 (약어 DB)
-├── HNDebug.swift                   디버그 로깅 유틸리티
-└── *.png                           메뉴 막대 아이콘 자산
+│   ├── HNAppController.swift        앱 컨트롤러
+│   ├── HNUserDefaults.swift         사용자 환경설정
+│   └── Info.plist                   입력 소스, 자판 등록
+├── HNDataController.swift           CoreData 스택 (약어 DB)
+├── HNDebug.swift                    디버그 로깅 유틸리티
+└── *.png                            메뉴바 아이콘 리소스
 ```
 
 ---
@@ -72,7 +72,8 @@ main.swift (autoreleasepool)
  │      로그아웃 없이 새 입력 모드 아이콘·설정을 시스템에 반영합니다.
  │
  ├─ 2. HNEventTap.shared.start()
- │      Shift+Space를 앱보다 먼저 가로채는 CGEventTap을 설치합니다.
+ │      Shift+Space 및 ESC(조합 중) 이벤트를 앱보다 먼저 가로채는
+ │      CGEventTap을 설치합니다.
  │      (접근성 권한 필요. 없으면 listen-only 또는 폴백 모드로 동작)
  │
  ├─ 3. IMKServer(name:bundleIdentifier:)
@@ -97,7 +98,8 @@ main.swift (autoreleasepool)
 ```
 macOS 이벤트 큐
  │
- ├─ [HNEventTap 활성 시] Shift+Space 이벤트 소비 (앱 도달 전)
+ ├─ [HNEventTap 활성 시] Shift+Space 소비 (앱 도달 전)
+ ├─ [HNEventTap 활성 시] ESC (조합 중) 소비 → 조합 커밋·모드 전환·합성 ESC 전송
  │
  └─ 나머지 이벤트 → 포커스된 앱 → NSTextInputContext.handleEvent()
                                           │
@@ -112,7 +114,7 @@ macOS 이벤트 큐
 
 **`handle(_:client:) → Bool`**
 
-모든 키 입력의 진입점입니다. `inputText(_:key:modifiers:client:)` 대신 이 메서드를 사용하는 이유는, `inputText`가 `false`를 반환할 때 IMK의 텍스트 처리 기계를 거쳐 터미널 에뮬레이터에 키 이벤트가 확실하게 전달되지 않는 문제가 있기 때문입니다.
+모든 키 입력의 진입점입니다. `inputText(_:key:modifiers:client:)` 대신 이 메서드를 사용하는 이유는, `inputText`가 `false`를 반환할 때 IMK의 텍스트 처리를 거쳐 터미널 에뮬레이터에 키 이벤트가 확실하게 전달되지 않는 문제가 있기 때문입니다.
 
 분기 로직:
 
@@ -122,7 +124,7 @@ keyDown 이벤트 수신
  ├─ Shift+Space (keyCode 49, Shift만 단독): toggleRomanMode()
  │   → HNEventTap이 소비 모드면 여기에 도달하지 않음 (폴백 경로)
  │
- ├─ ESC (수식키 없음, switchesToRomanOnEsc 켜짐, 한글 모드): 로마자 모드로 전환
+ ├─ ESC (변경키 없음, switchesToRomanOnEsc 켜짐, 한글 모드): 로마자 모드로 전환
  │   → 조합 커밋 후 통과 (false 반환)
  │   → HNEventTap이 소비 모드면 여기에 도달하지 않음 (폴백 경로)
  │   → 터미널 에뮬레이터에서는 조합 중일 때 CGEventTap 계층이 처리
@@ -172,6 +174,8 @@ mask = [.keyDown]
 
 **자소(Jaso) 방식**: 세벌식처럼 초성·중성·종성 자리를 별도의 키로 명시적으로 입력합니다.
 
+**세벌식 무확장**: shift 키를 사용하지 않고 현재 한글 전체를 입력할 수 있는 세벌식 자판.
+
 ### 자판 배열 데이터 구조
 
 ```swift
@@ -205,7 +209,7 @@ struct HNCharacter {
 키 입력
  │
  ├─ 로마자 모드: 그대로 통과 (조합 없음)
- ├─ Ctrl/Cmd/Option 수식키 조합: 통과
+ ├─ Ctrl/Cmd/Option 변경키 조합: 통과
  │
  ├─ 기호 키:
  │    현재 조합 커밋 → 기호 직접 삽입
@@ -217,7 +221,9 @@ struct HNCharacter {
       현재 조합 커밋 → false 반환 (앱이 처리)
 ```
 
-**`compose()` 자모 조합 알고리즘 (두벌식):**
+**`compose()` 음절 조합 알고리즘:**
+
+두벌식(jamo)과 세벌식(jaso) 모두 이 함수를 거칩니다. 세벌식은 키가 이미 초성·중성·종성으로 명시적 태깅되어 있어 아래의 초성→종성 변환 분기가 실행되지 않습니다.
 
 ```
 새 자소 입력
@@ -250,20 +256,27 @@ NFC 완성형 공식: `U+AC00 + (초성−1)×588 + (중성−1)×28 + 종성`
 
 ## 5. 로마자 모드 전환
 
-Shift+Space로 한글 조합을 일시 중단하고 로마자(영문)를 직접 입력하는 모드입니다. 로마자 모드는 별도의 입력 소스(`org.cocomelo.inputmethod.Hanulim.Roman`)로 등록되어 있어 메뉴 막대 아이콘도 함께 전환됩니다.
+Shift+Space 또는 ESC 키로 로마자 모드(`org.cocomelo.inputmethod.Hanulim.Roman`)와 한글 모드를 전환합니다. 로마자 모드는 별도의 입력 소스로 등록되어 있어 메뉴 막대 아이콘도 함께 전환됩니다.
+
+- **Shift+Space**: 로마자 ↔ 한글 토글 (`usesShiftSpaceForRomanMode` 옵션)
+- **ESC**: 한글 → 로마자 단방향 전환 (`switchesToRomanOnEsc` 옵션, vi/vim 사용자용)
 
 ### 2계층 구조
 
 ```
 계층 1: HNEventTap (CGEventTap, 시스템 수준)
- │  앱보다 먼저 Shift+Space를 가로채 이벤트를 소비합니다.
- │  접근성 권한이 있을 때만 동작합니다.
+ │  앱보다 먼저 이벤트를 가로채 처리합니다.
+ │  접근성 권한이 있을 때만 소비 모드로 동작합니다.
+ │    • Shift+Space → 로마자/한글 토글, 이벤트 소비
+ │    • ESC (조합 중) → 조합 커밋·모드 전환·합성 ESC 전송, 이벤트 소비
+ │    • ESC (조합 없음) → 모드 전환(비동기), 이벤트 통과
  │
  └─ 권한 없을 경우 폴백 →
 
 계층 2: HNInputController.handle() (IMK 수준)
     앱이 이미 처리한 후에 입력기에 전달된 이벤트를 받아 모드를 전환합니다.
-    Ghostty 등 이벤트를 미리 처리하는 앱에서 공백이 삽입되는 부작용이 있습니다.
+    Ghostty 등 이벤트를 미리 처리하는 앱에서 Shift+Space 공백이 삽입되는 부작용이 있습니다.
+    터미널 에뮬레이터에서 조합 중 ESC는 두 번 입력이 필요할 수 있습니다.
 ```
 
 ### HNEventTap 상세
@@ -294,7 +307,7 @@ Shift+Space로 한글 조합을 일시 중단하고 로마자(영문)를 직접 
         }
     }
 
-    // ── ESC (수식키 없음, switchesToRomanOnEsc 켜짐, 한글 모드) ──
+    // ── ESC (변경키 없음, switchesToRomanOnEsc 켜짐, 한글 모드) ──
     if isEsc && switchesToRomanOnEsc && isKoreanMode {
         if HNInputContext.isComposing {
             // 조합 중: 원본 ESC 소비 후 조합 커밋·모드 전환·합성 ESC 전송
@@ -441,7 +454,7 @@ TISSelectInputSource()
 
 이 옵션을 활성화하면 Shift+Space가 하늘입력기 내장 로마자 모드(`org.cocomelo.inputmethod.Hanulim.Roman`)와 한글 모드 사이를 토글합니다. 비활성화(기본값)하면 Shift+Space를 하늘입력기가 가로채지 않으므로, 시스템 단축키(시스템 설정 → 키보드 → 단축키 → 입력 소스)에 Shift+Space를 할당하여 ABC 등 다른 입력기와 전환하는 데 사용할 수 있습니다.
 
-> macOS의 기본 입력기 전환 단축키는 수식키(Ctrl, Cmd 등) 조합만 지원하므로, Shift+Space를 시스템 단축키로 쓰려면 이 옵션을 꺼야 합니다.
+> macOS의 기본 입력기 전환 단축키는 변경키(Ctrl, Cmd 등) 조합만 지원하므로, Shift+Space를 시스템 단축키로 쓰려면 이 옵션을 꺼야 합니다.
 
 **활성화 방법:**
 
@@ -465,7 +478,7 @@ killall Hanulim
 
 **동작 조건:**
 - 현재 입력 소스가 하늘입력기 한글 모드(로마자 모드 제외)일 것
-- ESC 단독 입력일 것 (다른 수식키 조합 제외)
+- ESC 단독 입력일 것 (다른 변경키 조합 제외)
 - 로마자 모드에서 ESC를 누를 경우: 모드 전환 없이 ESC만 전달됨
 - 다른 입력기(ABC 등)가 활성화된 상태에서는 동작하지 않음
 
@@ -509,14 +522,20 @@ killall Hanulim
 
 ## 9. 디버그 로깅
 
-`HNDebug.swift`는 `/tmp/hanulim.log` 파일에 비동기로 로그를 기록합니다. `#if DEBUG` 조건부 컴파일로 릴리스 빌드에서는 완전히 비활성화됩니다.
+`HNDebug.swift`는 `/tmp/hanulim.log` 파일에 비동기로 로그를 기록합니다. 로그 파일이 존재하지 않으면 새로 생성하고, 존재하면 끝에 추가합니다. `#if DEBUG` 조건부 컴파일 가드는 없으므로 **릴리스 빌드에서도 로그 파일이 존재하면 기록됩니다.**
 
-디버그 빌드에서 로그를 확인하려면:
+로그를 확인하려면:
 
 ```bash
 touch /tmp/hanulim.log
 killall Hanulim          # IME 프로세스 재시작
 tail -f /tmp/hanulim.log
+```
+
+로그를 끄려면 파일을 삭제하면 됩니다:
+
+```bash
+rm /tmp/hanulim.log
 ```
 
 ---
@@ -527,7 +546,10 @@ CGEventTap 소비 모드(이벤트를 앱보다 먼저 차단하는 방식)는 m
 
 **설정 경로**: 시스템 설정 → 개인정보 보호 및 보안 → 접근성 → Hanulim 추가
 
-권한이 없는 경우 입력 모드 전환 자체는 정상 동작하지만, Ghostty 등 IME 호출 전에 키 이벤트를 직접 처리하는 앱에서 Shift+Space 입력 시 공백 문자가 추가로 삽입될 수 있습니다.
+권한이 없는 경우 입력 모드 전환 자체는 정상 동작하지만 다음과 같은 부작용이 있습니다.
+
+- **Shift+Space**: Ghostty 등 IME 호출 전에 키 이벤트를 직접 처리하는 앱에서 공백 문자가 추가로 삽입됩니다.
+- **ESC (조합 중)**: Ghostty, Terminal.app 등 터미널 에뮬레이터에서 한글 조합 중에 ESC를 누르면 두 번 입력이 필요합니다. VimR 등 네이티브 macOS GUI 앱은 영향 없습니다.
 
 접근성 권한 부여 후 `killall Hanulim`으로 프로세스를 재시작하면 소비 모드 탭이 활성화됩니다. 로그에서 `tap installed (consuming=true)` 메시지로 확인할 수 있습니다.
 
