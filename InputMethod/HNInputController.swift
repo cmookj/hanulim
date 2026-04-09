@@ -155,18 +155,37 @@ extension HNInputController {
         } else if noModifiers, keyCode == 53,
                   HNUserDefaults.shared.switchesToRomanOnEsc,
                   HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-            // ESC: switch to Roman mode as a side effect, but always pass the
-            // event through (return false) so vim/terminal apps still see ESC.
-            // The tap callback also handles this; this branch is a fallback when
-            // the tap is not installed, and is harmless when the tap is active
-            // because by the time this runs the async tap dispatch hasn't fired
-            // yet (so isCurrentlyKoreanHanulimMode() is still true here, but the
-            // second selectInputSource call will be a no-op since the mode will
-            // already be Roman).
+            // ESC: commit any in-progress composition, switch to Roman mode,
+            // then ensure the application (e.g. vim) still sees ESC.
+            //
+            // When a syllable is being composed, the client may absorb the
+            // original ESC event as part of dismissing the preedit string,
+            // so returning false (pass-through) is unreliable in that case.
+            // The workaround: consume the original ESC (return true), and
+            // synthesise a fresh ESC CGEvent after the composition is cleared.
+            // When there is no active composition the original event can be
+            // passed through safely in the normal way.
             HNLog("HNInputController: ESC → switching to Roman mode")
+            let wasComposing = inputContext.composedString != nil
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
             HNEventTap.shared.selectInputSource(id: "org.cocomelo.inputmethod.Hanulim.Roman")
-            sHandled = false  // always pass ESC through
+            if wasComposing {
+                // Post a synthetic ESC after the composition has been cleared
+                // so the application receives exactly one ESC keystroke.
+                // Using main-async ensures the commit/mode-switch have fully
+                // propagated before the new event enters the queue.
+                DispatchQueue.main.async {
+                    let src = CGEventSource(stateID: .hidSystemState)
+                    let dn  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: true)
+                    let up  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: false)
+                    dn?.post(tap: .cgSessionEventTap)
+                    up?.post(tap: .cgSessionEventTap)
+                    HNLog("HNInputController: posted synthetic ESC after composition commit")
+                }
+                sHandled = true  // original ESC consumed; synthetic will follow
+            } else {
+                sHandled = false  // pass the original ESC through
+            }
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {
