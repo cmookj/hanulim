@@ -122,6 +122,11 @@ keyDown 이벤트 수신
  ├─ Shift+Space (keyCode 49, Shift만 단독): toggleRomanMode()
  │   → HNEventTap이 소비 모드면 여기에 도달하지 않음 (폴백 경로)
  │
+ ├─ ESC (수식키 없음, switchesToRomanOnEsc 켜짐, 한글 모드): 로마자 모드로 전환
+ │   → 조합 커밋 후 통과 (false 반환)
+ │   → HNEventTap이 소비 모드면 여기에 도달하지 않음 (폴백 경로)
+ │   → 터미널 에뮬레이터에서는 조합 중일 때 CGEventTap 계층이 처리
+ │
  ├─ Option+Return: 조합 중인 문자열로 약어 후보 검색
  │
  └─ 그 외: HNInputContext.handleKey() 위임
@@ -279,15 +284,37 @@ Shift+Space로 한글 조합을 일시 중단하고 로마자(영문)를 직접 
 
 ```swift
 { _, type, event, _ -> Unmanaged<CGEvent>? in
-    // keyDown + Shift만 + keyCode 49(Space) 확인
-    guard isShiftSpace else { return Unmanaged.passRetained(event) }
-
-    if HNEventTap.shared.isConsuming {
-        DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }
-        return nil  // 이벤트 소비 → 앱에 전달되지 않음
-    } else {
-        return Unmanaged.passRetained(event)  // 통과 (폴백에서 처리)
+    // ── Shift+Space ──────────────────────────────────────────
+    if isShiftSpace && usesShiftSpaceForRomanMode {
+        if HNEventTap.shared.isConsuming {
+            DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }
+            return nil  // 이벤트 소비 → 앱에 전달되지 않음
+        } else {
+            return Unmanaged.passRetained(event)  // 통과 (폴백에서 처리)
+        }
     }
+
+    // ── ESC (수식키 없음, switchesToRomanOnEsc 켜짐, 한글 모드) ──
+    if isEsc && switchesToRomanOnEsc && isKoreanMode {
+        if HNInputContext.isComposing {
+            // 조합 중: 원본 ESC 소비 후 조합 커밋·모드 전환·합성 ESC 전송
+            // 터미널 에뮬레이터는 조합 중 ESC를 preedit 해제로 처리하여
+            // PTY로 전달하지 않으므로, CGEventTap 계층에서 직접 처리해야 함
+            DispatchQueue.main.async {
+                HNInputController.active?.commitForEsc()
+                HNEventTap.shared.selectInputSource(id: romanModeID)
+                // 합성 ESC: preedit 없음 → 터미널이 PTY로 정상 전달
+                CGEvent(virtualKey: 53, keyDown: true)?.post(tap: .cgAnnotatedSessionEventTap)
+                CGEvent(virtualKey: 53, keyDown: false)?.post(tap: .cgAnnotatedSessionEventTap)
+            }
+            return nil  // 원본 소비
+        } else {
+            // 조합 없음: 모드 전환 후 원본 통과 → 앱이 ESC를 그대로 수신
+            DispatchQueue.main.async { HNEventTap.shared.selectInputSource(id: romanModeID) }
+        }
+    }
+
+    return Unmanaged.passRetained(event)
 }
 ```
 
@@ -444,12 +471,25 @@ killall Hanulim
 
 **처리 방식:**
 
-ESC 이벤트는 소비하지 않고 항상 앱에 그대로 전달됩니다. 하늘입력기은 ESC를 관찰하는 동시에 TIS 입력 소스 전환을 부수 효과로 수행합니다. vi/vim은 ESC를 정상적으로 수신하여 입력 모드에서 명령 모드로 전환하고, 하늘입력기도 동시에 로마자 모드로 전환됩니다.
+한글 조합 중 여부에 따라 두 가지 경로로 처리됩니다.
 
-이 기능은 2계층으로 처리됩니다.
+| 상태 | ESC 처리 |
+|------|---------|
+| 조합 없음 | 원본 ESC 통과, 모드 전환은 비동기 부수 효과 |
+| 조합 중 (preedit 있음) | 원본 ESC 소비 후 조합 커밋·모드 전환·합성 ESC 전송 |
 
-- **접근성 권한 있음**: `HNEventTap` CGEventTap 콜백에서 처리 → 터미널 에뮬레이터를 포함한 모든 앱에서 동작
-- **접근성 권한 없음**: `HNInputController.handle()` 폴백에서 처리 → 동일하게 동작하지만, Shift+Space의 공백 삽입 문제는 남아 있음
+**조합 없음**: ESC 이벤트는 소비하지 않고 앱에 그대로 전달됩니다. 모드 전환은 비동기로 수행되므로 vi/vim은 ESC를 정상 수신하여 명령 모드로 전환됩니다.
+
+**조합 중**: Ghostty, Terminal.app 등 터미널 에뮬레이터는 preedit(조합 중인 음절)이 표시된 상태에서 ESC가 입력되면, 이를 "preedit 해제" 이벤트로 분류하고 PTY(neovim 등)로 전달하지 않습니다. 이를 해결하기 위해 CGEventTap이 원본 ESC를 **소비**하고 메인 스레드에서 다음 순서로 처리합니다.
+
+1. `HNInputController.commitForEsc()`: 조합 중인 음절을 클라이언트에 삽입
+2. `selectInputSource(romanModeID)`: 로마자 모드로 전환
+3. 합성 ESC 이벤트 전송 (`.cgAnnotatedSessionEventTap`): preedit가 없는 상태에서 도착하므로 터미널이 PTY로 정상 전달 → neovim/vim이 명령 모드로 전환
+
+이 기능은 2계층으로 구현됩니다.
+
+- **접근성 권한 있음**: `HNEventTap` CGEventTap 콜백에서 처리 → 터미널 에뮬레이터(Ghostty, Terminal.app), GUI 앱(VimR) 모두 단일 ESC로 정상 동작
+- **접근성 권한 없음**: `HNInputController.handle()` 폴백에서 처리 → VimR 등 네이티브 GUI 앱은 정상 동작하지만, 터미널 에뮬레이터에서 조합 중일 때는 ESC를 두 번 입력해야 할 수 있음
 
 **활성화 방법:**
 
