@@ -1,29 +1,39 @@
 /*
  * Hanulim
  *
- * Original Objective-C code - https://github.com/han9kin/hanulim
+ * Copyright (C) 2007-2017  Sanghyuk Suh <han9kin@mac.com>
+ * Copyright (C) 2026  Changmook Chun <cmookj@duck.com>
  *
- * Debug logging utilities.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * `HNLog` is a thin wrapper around `NSLog`. Messages are written to the
- * unified logging system and appear in Console.app under the process name
- * "Hanulim".
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The function body is compiled only when the DEBUG preprocessor flag is set
- * (i.e. in Debug build configurations). In Release builds the call site is
- * still compiled but the body is a no-op, so there is zero runtime cost and
- * no log output in production.
- *
- * The `@autoclosure` parameter means the message string is only evaluated
- * (and any interpolation performed) when the DEBUG branch is actually taken,
- * avoiding unnecessary string construction in release builds even if the
- * compiler cannot eliminate the call entirely.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import Foundation
 
+private let hnLogURL = URL(fileURLWithPath: "/tmp/hanulim.log")
+private let hnLogQueue = DispatchQueue(label: "org.cocomelo.inputmethod.Hanulim.log")
+
 func HNLog(_ message: @autoclosure () -> String) {
-#if DEBUG
-    NSLog("%@", message())
-#endif
+    let text = "\(Date()): \(message())\n"
+    hnLogQueue.async {
+        if let data = text.data(using: .utf8) {
+            if let handle = try? FileHandle(forWritingTo: hnLogURL) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            } else {
+                try? data.write(to: hnLogURL)
+            }
+        }
+    }
 }

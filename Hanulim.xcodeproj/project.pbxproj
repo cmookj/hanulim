@@ -22,8 +22,7 @@
 		0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D52F7FB274007519AE /* HNInputContext.swift */; };
 		0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */; };
 		0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D22F7FB274007519AE /* HNAppController.swift */; };
-		0EDDEF7D2F8456A1001D5485 /* ATImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDEF7C2F8456A1001D5485 /* ATImport.swift */; };
-		0EDDEF7F2F845725001D5485 /* AEAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDEF7E2F845725001D5485 /* AEAppDelegate.swift */; };
+		31928B4A52E04B3FA796DC0B /* HNEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392BBF863CA34A1C80D4B356 /* HNEventTap.swift */; };
 		6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57714A3BEC000E2A10D /* hanulim2a.png */; };
 		6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57814A3BEC000E2A10D /* hanulim3.png */; };
 		6014B58014A3BEC000E2A10D /* hanulim3a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57914A3BEC000E2A10D /* hanulim3a.png */; };
@@ -110,6 +109,7 @@
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		392BBF863CA34A1C80D4B356 /* HNEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNEventTap.swift; path = InputMethod/HNEventTap.swift; sourceTree = "<group>"; };
 		6014B57714A3BEC000E2A10D /* hanulim2a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim2a.png; path = InputMethod/hanulim2a.png; sourceTree = "<group>"; };
 		6014B57814A3BEC000E2A10D /* hanulim3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3.png; path = InputMethod/hanulim3.png; sourceTree = "<group>"; };
 		6014B57914A3BEC000E2A10D /* hanulim3a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3a.png; path = InputMethod/hanulim3a.png; sourceTree = "<group>"; };
@@ -181,6 +181,7 @@
 				0E16F6D22F7FB274007519AE /* HNAppController.swift */,
 				0E16F6D32F7FB274007519AE /* HNCandidates.swift */,
 				0E16F6D42F7FB274007519AE /* HNCandidatesController.swift */,
+				392BBF863CA34A1C80D4B356 /* HNEventTap.swift */,
 				0E16F6D52F7FB274007519AE /* HNInputContext.swift */,
 				0E16F6D62F7FB274007519AE /* HNInputController.swift */,
 				0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */,
@@ -383,6 +384,7 @@
 			dependencies = (
 				CF41989C0E12B2F100A2BE4A /* PBXTargetDependency */,
 				CF3E86030E0BDEB600F1116F /* PBXTargetDependency */,
+				AA01000BB0B0B0B0B000000B /* PBXTargetDependency */,
 			);
 			name = Hanulim;
 			productInstallPath = "$(HOME)/Applications";
@@ -456,6 +458,7 @@
 				"ko-KR",
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Hanulim */;
+			productRefGroup = 19C28FACFE9D520D11CA2CBB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -520,6 +523,7 @@
 				0E16F6D92F7FB274007519AE /* HNInputController.swift in Sources */,
 				0E16F6DA2F7FB274007519AE /* HNCandidates.swift in Sources */,
 				0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */,
+				31928B4A52E04B3FA796DC0B /* HNEventTap.swift in Sources */,
 				0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */,
 				0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */,
 				0E16F6CF2F7FB1ED007519AE /* main.swift in Sources */,
@@ -553,6 +557,9 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AA01000BB0B0B0B0B000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+		};
 		CF3E86030E0BDEB600F1116F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CF3E85EC0E0BDE2F00F1116F /* AbbrevEdit */;

@@ -1,10 +1,25 @@
 /*
  * Hanulim
  *
- * Original Objective-C code - https://github.com/han9kin/hanulim
+ * Copyright (C) 2007-2017  Sanghyuk Suh <han9kin@mac.com>
+ * Copyright (C) 2026  Changmook Chun <cmookj@duck.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import Cocoa
+import Carbon
 import InputMethodKit
 
 /// The IMK input controller. macOS instantiates one of these for every client
@@ -29,6 +44,16 @@ class HNInputController: IMKInputController {
     /// IMKCandidates panel is visible.
     private var currentCandidates: HNCandidates?
 
+    /// The most recently active controller instance. Used by the CGEventTap
+    /// to commit composition before switching to the ASCII layout.
+    /// Only written on the main thread; reading from the tap thread is safe
+    /// for the same reason as HNInputContext.isComposing.
+    nonisolated(unsafe) static weak var active: HNInputController?
+
+    /// The client passed to the most recent handle(_:client:) call. Stored so
+    /// that commitForEsc() can reach the client without a handle() argument.
+    private weak var activeClient: AnyObject?
+
     // MARK: - Lifecycle
 
     override init!(server: IMKServer!, delegate: Any!, client inputClient: Any!) {
@@ -36,6 +61,16 @@ class HNInputController: IMKInputController {
         HNLog("HNInputController \(String(describing: self)) initWithServer")
         // Wire the shared preferences to this context so handleKey() can read them.
         inputContext.userDefaults = HNUserDefaults.shared
+    }
+
+    override func activateServer(_ sender: Any!) {
+        HNLog("HNInputController \(String(describing: self)) activateServer")
+        super.activateServer(sender)
+    }
+
+    override func deactivateServer(_ sender: Any!) {
+        HNLog("HNInputController \(String(describing: self)) deactivateServer")
+        super.deactivateServer(sender)
     }
 
     // MARK: - IMKInputController overrides
@@ -78,6 +113,19 @@ class HNInputController: IMKInputController {
     }
 }
 
+// MARK: - ESC composition commit (called from event tap)
+
+extension HNInputController {
+
+    /// Called by HNEventTap when it has already consumed an ESC event and needs
+    /// to commit any in-progress composition before posting a synthetic ESC.
+    /// Must be called on the main thread.
+    func commitForEsc() {
+        let client = activeClient as? (any IMKTextInput)
+        inputContext.commitComposition(client: client)
+    }
+}
+
 // MARK: - IMKStateSetting
 
 extension HNInputController {
@@ -97,12 +145,19 @@ extension HNInputController {
         return Int(mask.rawValue)
     }
 
+<<<<<<< HEAD
     /// Called by macOS when the active input source (keyboard layout / mode)
     /// changes. Updates the composition engine's keyboard layout so the correct
     /// key-to-jaso mapping is used.
+||||||| b1e72a5
+=======
+    /// Called by the system when the input mode changes — for example when the
+    /// user picks a different Hanulim sub-mode (두벌식, 세벌식, …) from the menu
+    /// bar or when the focused app activates.
+>>>>>>> develop
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
-        HNLog("HNInputController setValue: \(String(describing: value)) forTag: \(tag)")
         if tag == kTSMDocumentInputModePropertyTag, let name = value as? String {
+            HNLog("HNInputController setValue: mode=\(name)")
             inputContext.setKeyboardLayout(name: name)
         }
     }
@@ -112,6 +167,7 @@ extension HNInputController {
 
 extension HNInputController {
 
+<<<<<<< HEAD
     /// Main key-event entry point. Returns `true` if the event was consumed by
     /// the input method (the app should not process it further), `false` if the
     /// event should be re-dispatched through the normal event chain.
@@ -121,17 +177,69 @@ extension HNInputController {
     ///   2. Everything else → `HNInputContext.handleKey()`
     override func inputText(_ string: String!, key keyCode: Int, modifiers flags: Int, client sender: Any!) -> Bool {
         HNLog("HNInputController inputText: \(String(describing: string)) key: \(keyCode) modifiers: \(flags)")
+||||||| b1e72a5
+    override func inputText(_ string: String!, key keyCode: Int, modifiers flags: Int, client sender: Any!) -> Bool {
+        HNLog("HNInputController inputText: \(String(describing: string)) key: \(keyCode) modifiers: \(flags)")
+=======
+    // handle(_:client:) is used instead of inputText(_:key:modifiers:client:).
+    // When handle returns false the raw NSEvent is re-dispatched through the
+    // normal event chain and the app's keyDown: is called — which is what
+    // terminal emulators like Ghostty require. inputText returning false goes
+    // through IMK's text machinery and may not reach keyDown: reliably.
+    override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        guard event.type == .keyDown else { return false }
+
+        // Keep the tap-accessible references current so commitForEsc() works.
+        HNInputController.active = self
+        activeClient = sender as AnyObject?
+
+        HNLog("HNInputController handle: keyCode=\(event.keyCode) modifiers=\(event.modifierFlags.rawValue)")
+>>>>>>> develop
 
         var sHandled        = false
         var sShowCandidates = false
 
-        let modifierFlags = NSEvent.ModifierFlags(rawValue: UInt(bitPattern: flags))
-        let deviceFlags   = modifierFlags.intersection(.deviceIndependentFlagsMask)
-        let firstChar     = string?.unicodeScalars.first?.value
+        let deviceFlags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let string      = event.characters ?? ""
+        let keyCode     = Int(event.keyCode)
+        let rawFlags    = Int(bitPattern: UInt(event.modifierFlags.rawValue))
+        let firstChar   = string.unicodeScalars.first?.value
 
+<<<<<<< HEAD
         if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: look up the current composed string in the
             // abbreviation database and show the candidates panel.
+||||||| b1e72a5
+        if deviceFlags == .option, firstChar == 0x0d {
+            // Option + Return: show abbreviation candidates
+=======
+        let noModifiers = deviceFlags.intersection([.shift, .control, .option, .command]).isEmpty
+
+        if noModifiers, keyCode == 53,
+           HNUserDefaults.shared.switchesToRomanOnEsc,
+           !HNEventTap.shared.isConsuming {
+            // ESC fallback — only reached when the consuming tap is NOT active
+            // (Accessibility permission not granted).  When the consuming tap IS
+            // running, it handles both sub-cases itself:
+            //   • Composing: tap consumes ESC, commits composition, switches to
+            //     ASCII, then posts a synthetic ESC.  This branch is never
+            //     reached for that event.
+            //   • Not composing: tap passes ESC through and schedules
+            //     switchToASCII() asynchronously.  The isConsuming guard above
+            //     prevents a redundant second call from this branch.
+            //
+            // Here (no tap) we commit any in-progress composition, switch to the
+            // ASCII layout, and pass the ESC through (return false) so the
+            // focused app receives it.  Terminal emulators may need a second ESC
+            // when composition was active, because they already classified the
+            // original event as "dismiss preedit" at arrival time.
+            HNLog("HNInputController: ESC fallback (no tap) → commit and switch to ASCII")
+            inputContext.commitComposition(client: sender as? (any IMKTextInput))
+            HNEventTap.shared.switchToASCII()
+            sHandled = false
+        } else if deviceFlags == .option, firstChar == 0x0d {
+            // Option + Return: show abbreviation candidates
+>>>>>>> develop
             if let composed = inputContext.composedString {
                 currentCandidates = HNCandidatesController.shared?.candidates(for: composed)
                 if currentCandidates != nil {
@@ -142,9 +250,9 @@ extension HNInputController {
         } else {
             let textClient = sender as? (any IMKTextInput)
             sHandled = inputContext.handleKey(
-                string: string ?? "",
+                string: string,
                 keyCode: keyCode,
-                modifiers: flags,
+                modifiers: rawFlags,
                 client: textClient
             )
             currentCandidates = nil
@@ -156,7 +264,7 @@ extension HNInputController {
             HNCandidatesController.shared?.hide()
         }
 
-        HNLog("HNInputController inputText => \(sHandled ? "YES" : "NO")")
+        HNLog("HNInputController handle => \(sHandled ? "YES" : "NO")")
         return sHandled
     }
 

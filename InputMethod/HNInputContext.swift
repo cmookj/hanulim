@@ -1,7 +1,21 @@
 /*
  * Hanulim
  *
- * Original Objective-C code - https://github.com/han9kin/hanulim
+ * Copyright (C) 2007-2017  Sanghyuk Suh <han9kin@mac.com>
+ * Copyright (C) 2026  Changmook Chun <cmookj@duck.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 import Foundation
@@ -1322,8 +1336,18 @@ private let hnHandlableMask: UInt = {
 ///      the text field (called on focus loss, mouse click, etc.).
 class HNInputContext {
 
+<<<<<<< HEAD
     /// The currently active keyboard layout, or nil before the first
     /// `setValue` callback from IMKit.
+||||||| b1e72a5
+=======
+    /// Process-wide flag: true while any HNInputContext has an in-progress
+    /// syllable (composedString ≠ nil). Written on the main thread; read by
+    /// the CGEventTap callback thread. A momentarily stale read is acceptable
+    /// — the worst case is one unnecessary ESC pass-through.
+    nonisolated(unsafe) static var isComposing: Bool = false
+
+>>>>>>> develop
     private var keyboardLayout: HNKeyboardLayout?
 
     /// User preference settings; injected by HNInputController after init.
@@ -1430,6 +1454,7 @@ class HNInputContext {
 
         composedString = nil
         keyBuffer.removeAll()
+        HNInputContext.isComposing = false
     }
 
     func updateComposition(client: (any IMKTextInput)?) {
@@ -1446,6 +1471,7 @@ class HNInputContext {
     func cancelComposition() {
         composedString = nil
         keyBuffer.removeAll()
+        HNInputContext.isComposing = false
     }
 
     // MARK: - Private: Key handling helpers
@@ -1754,5 +1780,6 @@ class HNInputContext {
         charBuffer.append(contentsOf: composeCharacter(char))
         composedString = charBuffer.isEmpty ? nil
             : String(utf16CodeUnits: charBuffer, count: charBuffer.count)
+        HNInputContext.isComposing = composedString != nil
     }
 }
