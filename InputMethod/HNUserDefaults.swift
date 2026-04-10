@@ -40,27 +40,11 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
     /// lifetime of the input method process.
     nonisolated(unsafe) static let shared = HNUserDefaults()
 
-<<<<<<< HEAD
-    /// When `true`, the input method converts straight apostrophes and
-    /// quotation marks to their typographic ("curly") equivalents.
-    private(set) var usesSmartQuotationMarks: Bool = false
-||||||| b1e72a5
-    private(set) var usesSmartQuotationMarks:     Bool = false
-    private(set) var inputsBackSlashInsteadOfWon: Bool = false
-    private(set) var handlesCapsLockAsShift:       Bool = false
-    private(set) var commitsImmediately:           Bool = false
-    private(set) var usesDecomposedUnicode:        Bool = false
-=======
     private(set) var usesSmartQuotationMarks:       Bool = false
-    private(set) var inputsBackSlashInsteadOfWon:   Bool = false
-    private(set) var handlesCapsLockAsShift:         Bool = false
-    private(set) var commitsImmediately:             Bool = false
-    private(set) var usesDecomposedUnicode:          Bool = false
     /// When true, pressing ESC while a Hanulim Korean mode is active
     /// commits any in-progress composition and switches to the system's
     /// current ASCII-capable keyboard layout (useful for vi/vim users).
     private(set) var switchesToRomanOnEsc:           Bool = false
->>>>>>> develop
 
     /// When `true`, the backslash key (U+005C) is inserted literally instead
     /// of being mapped to the Korean Won sign (U+20A9), which occupies the
@@ -85,26 +69,12 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
     // the key strings declared in the preference pane and in any defaults
     // registration code.
     private enum Keys {
-<<<<<<< HEAD
-        static let smartQuotationMarks   = "usesSmartQuotationMarks"
-        static let backSlashInsteadOfWon = "inputsBackSlashInsteadOfWon"
-        static let capsLockAsShift       = "handlesCapsLockAsShift"
-        static let commitsImmediately    = "commitsImmediately"
-        static let decomposedUnicode     = "usesDecomposedUnicode"
-||||||| b1e72a5
-        static let smartQuotationMarks     = "usesSmartQuotationMarks"
-        static let backSlashInsteadOfWon   = "inputsBackSlashInsteadOfWon"
-        static let capsLockAsShift         = "handlesCapsLockAsShift"
-        static let commitsImmediately      = "commitsImmediately"
-        static let decomposedUnicode       = "usesDecomposedUnicode"
-=======
         static let smartQuotationMarks       = "usesSmartQuotationMarks"
         static let backSlashInsteadOfWon     = "inputsBackSlashInsteadOfWon"
         static let capsLockAsShift           = "handlesCapsLockAsShift"
         static let commitsImmediately        = "commitsImmediately"
         static let decomposedUnicode         = "usesDecomposedUnicode"
         static let switchesToRomanOnEsc      = "switchesToRomanOnEsc"
->>>>>>> develop
     }
 
     private override init() {
@@ -129,26 +99,12 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
 
     private func loadUserDefaults() {
         let defaults = UserDefaults.standard
-<<<<<<< HEAD
-        usesSmartQuotationMarks     = defaults.bool(forKey: Keys.smartQuotationMarks)
-        inputsBackSlashInsteadOfWon = defaults.bool(forKey: Keys.backSlashInsteadOfWon)
-        handlesCapsLockAsShift      = defaults.bool(forKey: Keys.capsLockAsShift)
-        commitsImmediately          = defaults.bool(forKey: Keys.commitsImmediately)
-        usesDecomposedUnicode       = defaults.bool(forKey: Keys.decomposedUnicode)
-||||||| b1e72a5
-        usesSmartQuotationMarks     = defaults.bool(forKey: Keys.smartQuotationMarks)
-        inputsBackSlashInsteadOfWon = defaults.bool(forKey: Keys.backSlashInsteadOfWon)
-        handlesCapsLockAsShift       = defaults.bool(forKey: Keys.capsLockAsShift)
-        commitsImmediately           = defaults.bool(forKey: Keys.commitsImmediately)
-        usesDecomposedUnicode        = defaults.bool(forKey: Keys.decomposedUnicode)
-=======
         usesSmartQuotationMarks       = defaults.bool(forKey: Keys.smartQuotationMarks)
         inputsBackSlashInsteadOfWon   = defaults.bool(forKey: Keys.backSlashInsteadOfWon)
         handlesCapsLockAsShift         = defaults.bool(forKey: Keys.capsLockAsShift)
         commitsImmediately             = defaults.bool(forKey: Keys.commitsImmediately)
         usesDecomposedUnicode          = defaults.bool(forKey: Keys.decomposedUnicode)
         switchesToRomanOnEsc           = defaults.bool(forKey: Keys.switchesToRomanOnEsc)
->>>>>>> develop
     }
 
     @objc private func userDefaultsDidChange(_ notification: Notification) {

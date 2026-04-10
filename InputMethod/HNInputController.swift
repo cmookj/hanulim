@@ -145,16 +145,9 @@ extension HNInputController {
         return Int(mask.rawValue)
     }
 
-<<<<<<< HEAD
-    /// Called by macOS when the active input source (keyboard layout / mode)
-    /// changes. Updates the composition engine's keyboard layout so the correct
-    /// key-to-jaso mapping is used.
-||||||| b1e72a5
-=======
     /// Called by the system when the input mode changes — for example when the
     /// user picks a different Hanulim sub-mode (두벌식, 세벌식, …) from the menu
     /// bar or when the focused app activates.
->>>>>>> develop
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         if tag == kTSMDocumentInputModePropertyTag, let name = value as? String {
             HNLog("HNInputController setValue: mode=\(name)")
@@ -167,20 +160,6 @@ extension HNInputController {
 
 extension HNInputController {
 
-<<<<<<< HEAD
-    /// Main key-event entry point. Returns `true` if the event was consumed by
-    /// the input method (the app should not process it further), `false` if the
-    /// event should be re-dispatched through the normal event chain.
-    ///
-    /// Dispatch order:
-    ///   1. Option+Return → abbreviation candidate lookup (only when composing)
-    ///   2. Everything else → `HNInputContext.handleKey()`
-    override func inputText(_ string: String!, key keyCode: Int, modifiers flags: Int, client sender: Any!) -> Bool {
-        HNLog("HNInputController inputText: \(String(describing: string)) key: \(keyCode) modifiers: \(flags)")
-||||||| b1e72a5
-    override func inputText(_ string: String!, key keyCode: Int, modifiers flags: Int, client sender: Any!) -> Bool {
-        HNLog("HNInputController inputText: \(String(describing: string)) key: \(keyCode) modifiers: \(flags)")
-=======
     // handle(_:client:) is used instead of inputText(_:key:modifiers:client:).
     // When handle returns false the raw NSEvent is re-dispatched through the
     // normal event chain and the app's keyDown: is called — which is what
@@ -194,7 +173,6 @@ extension HNInputController {
         activeClient = sender as AnyObject?
 
         HNLog("HNInputController handle: keyCode=\(event.keyCode) modifiers=\(event.modifierFlags.rawValue)")
->>>>>>> develop
 
         var sHandled        = false
         var sShowCandidates = false
@@ -205,14 +183,6 @@ extension HNInputController {
         let rawFlags    = Int(bitPattern: UInt(event.modifierFlags.rawValue))
         let firstChar   = string.unicodeScalars.first?.value
 
-<<<<<<< HEAD
-        if deviceFlags == .option, firstChar == 0x0d {
-            // Option + Return: look up the current composed string in the
-            // abbreviation database and show the candidates panel.
-||||||| b1e72a5
-        if deviceFlags == .option, firstChar == 0x0d {
-            // Option + Return: show abbreviation candidates
-=======
         let noModifiers = deviceFlags.intersection([.shift, .control, .option, .command]).isEmpty
 
         if noModifiers, keyCode == 53,
@@ -239,7 +209,6 @@ extension HNInputController {
             sHandled = false
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
->>>>>>> develop
             if let composed = inputContext.composedString {
                 currentCandidates = HNCandidatesController.shared?.candidates(for: composed)
                 if currentCandidates != nil {
