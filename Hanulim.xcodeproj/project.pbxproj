@@ -22,6 +22,7 @@
 		0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D52F7FB274007519AE /* HNInputContext.swift */; };
 		0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */; };
 		0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D22F7FB274007519AE /* HNAppController.swift */; };
+		0E18F2DD2F8995A6007649A8 /* ATImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDDEF7C2F8456A1001D5485 /* ATImport.swift */; };
 		31928B4A52E04B3FA796DC0B /* HNEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392BBF863CA34A1C80D4B356 /* HNEventTap.swift */; };
 		6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57714A3BEC000E2A10D /* hanulim2a.png */; };
 		6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57814A3BEC000E2A10D /* hanulim3.png */; };
@@ -535,7 +536,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E16F6CD2F7FB1D5007519AE /* main.swift in Sources */,
-				0EDDEF7F2F845725001D5485 /* AEAppDelegate.swift in Sources */,
 				CF0576FB0E103B7400F8DA39 /* Abbrevs.xcdatamodel in Sources */,
 				0E16F6AE2F7FAFA8007519AE /* HNDataController.swift in Sources */,
 				0E16F6AF2F7FAFA8007519AE /* HNDebug.swift in Sources */,
@@ -550,7 +550,7 @@
 				0E16F6D12F7FB20A007519AE /* main.swift in Sources */,
 				0E16F6B02F7FAFA8007519AE /* HNDataController.swift in Sources */,
 				0E16F6B12F7FAFA8007519AE /* HNDebug.swift in Sources */,
-				0EDDEF7D2F8456A1001D5485 /* ATImport.swift in Sources */,
+				0E18F2DD2F8995A6007649A8 /* ATImport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

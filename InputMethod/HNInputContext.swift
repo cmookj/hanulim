@@ -1336,18 +1336,12 @@ private let hnHandlableMask: UInt = {
 ///      the text field (called on focus loss, mouse click, etc.).
 class HNInputContext {
 
-<<<<<<< HEAD
-    /// The currently active keyboard layout, or nil before the first
-    /// `setValue` callback from IMKit.
-||||||| b1e72a5
-=======
     /// Process-wide flag: true while any HNInputContext has an in-progress
     /// syllable (composedString ≠ nil). Written on the main thread; read by
     /// the CGEventTap callback thread. A momentarily stale read is acceptable
     /// — the worst case is one unnecessary ESC pass-through.
     nonisolated(unsafe) static var isComposing: Bool = false
 
->>>>>>> develop
     private var keyboardLayout: HNKeyboardLayout?
 
     /// User preference settings; injected by HNInputController after init.
