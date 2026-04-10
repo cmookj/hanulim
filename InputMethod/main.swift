@@ -26,10 +26,10 @@ autoreleasepool {
     let bundle             = Bundle.main
 
     // Re-register the bundle so the system picks up any new or changed input
-    // modes (e.g. the Roman mode icon) without requiring a logout/login.
+    // mode icons and settings without requiring a logout/login.
     TISRegisterInputSource(bundle.bundleURL as CFURL)
 
-    // Install the system-level event tap for Shift+Space mode toggle.
+    // Install the system-level event tap for ESC → ASCII layout switching.
     // Must be called before NSApplication.run() so the run loop is available.
     HNEventTap.shared.start()
 

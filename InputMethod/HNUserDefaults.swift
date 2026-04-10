@@ -29,13 +29,9 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
     private(set) var handlesCapsLockAsShift:         Bool = false
     private(set) var commitsImmediately:             Bool = false
     private(set) var usesDecomposedUnicode:          Bool = false
-    /// When true, Shift+Space toggles Hanulim's built-in Roman mode.
-    /// When false, Shift+Space is passed through so the system shortcut
-    /// (System Settings → Keyboard → Shortcuts → Input Sources) handles it,
-    /// typically switching to ABC.
-    private(set) var usesShiftSpaceForRomanMode:     Bool = false
     /// When true, pressing ESC while a Hanulim Korean mode is active
-    /// automatically switches to Roman mode (useful for vi/vim users).
+    /// commits any in-progress composition and switches to the system's
+    /// current ASCII-capable keyboard layout (useful for vi/vim users).
     private(set) var switchesToRomanOnEsc:           Bool = false
 
     private enum Keys {
@@ -44,15 +40,13 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
         static let capsLockAsShift           = "handlesCapsLockAsShift"
         static let commitsImmediately        = "commitsImmediately"
         static let decomposedUnicode         = "usesDecomposedUnicode"
-        static let usesShiftSpaceForRomanMode = "usesShiftSpaceForRomanMode"
         static let switchesToRomanOnEsc      = "switchesToRomanOnEsc"
     }
 
     private override init() {
         super.init()
         UserDefaults.standard.register(defaults: [
-            Keys.usesShiftSpaceForRomanMode: false,
-            Keys.switchesToRomanOnEsc:       false,
+            Keys.switchesToRomanOnEsc: false,
         ])
         loadUserDefaults()
         NotificationCenter.default.addObserver(
@@ -74,7 +68,6 @@ class HNUserDefaults: NSObject, HNICUserDefaults {
         handlesCapsLockAsShift         = defaults.bool(forKey: Keys.capsLockAsShift)
         commitsImmediately             = defaults.bool(forKey: Keys.commitsImmediately)
         usesDecomposedUnicode          = defaults.bool(forKey: Keys.decomposedUnicode)
-        usesShiftSpaceForRomanMode     = defaults.bool(forKey: Keys.usesShiftSpaceForRomanMode)
         switchesToRomanOnEsc           = defaults.bool(forKey: Keys.switchesToRomanOnEsc)
     }
 

@@ -22,8 +22,6 @@ import Cocoa
 import Carbon
 import InputMethodKit
 
-private let kRomanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
-
 @objc(HNInputController)
 class HNInputController: IMKInputController {
 
@@ -31,7 +29,7 @@ class HNInputController: IMKInputController {
     private var currentCandidates: HNCandidates?
 
     /// The most recently active controller instance. Used by the CGEventTap
-    /// to commit composition and trigger mode-switch from off the main thread.
+    /// to commit composition before switching to the ASCII layout.
     /// Only written on the main thread; reading from the tap thread is safe
     /// for the same reason as HNInputContext.isComposing.
     nonisolated(unsafe) static weak var active: HNInputController?
@@ -46,6 +44,16 @@ class HNInputController: IMKInputController {
         super.init(server: server, delegate: delegate, client: inputClient)
         HNLog("HNInputController \(String(describing: self)) initWithServer")
         inputContext.userDefaults = HNUserDefaults.shared
+    }
+
+    override func activateServer(_ sender: Any!) {
+        HNLog("HNInputController \(String(describing: self)) activateServer")
+        super.activateServer(sender)
+    }
+
+    override func deactivateServer(_ sender: Any!) {
+        HNLog("HNInputController \(String(describing: self)) deactivateServer")
+        super.deactivateServer(sender)
     }
 
     // MARK: - IMKInputController overrides
@@ -95,19 +103,6 @@ extension HNInputController {
     }
 }
 
-// MARK: - Roman Mode Toggle
-
-extension HNInputController {
-
-    // Delegate to HNEventTap.shared which reads TIS state directly (ground
-    // truth) rather than per-instance inputContext.isRomanMode, ensuring the
-    // toggle works correctly regardless of which controller instance is active.
-    private func toggleRomanMode() {
-        HNLog("HNInputController: toggleRomanMode called")
-        HNEventTap.shared.toggleRomanMode()
-    }
-}
-
 // MARK: - IMKStateSetting
 
 extension HNInputController {
@@ -123,13 +118,13 @@ extension HNInputController {
         return Int(mask.rawValue)
     }
 
+    /// Called by the system when the input mode changes — for example when the
+    /// user picks a different Hanulim sub-mode (두벌식, 세벌식, …) from the menu
+    /// bar or when the focused app activates.
     override func setValue(_ value: Any!, forTag tag: Int, client sender: Any!) {
         if tag == kTSMDocumentInputModePropertyTag, let name = value as? String {
             HNLog("HNInputController setValue: mode=\(name)")
             inputContext.setKeyboardLayout(name: name)
-            if name != kRomanModeID {
-                HNEventTap.shared.lastKoreanModeID = name
-            }
         }
     }
 }
@@ -163,40 +158,28 @@ extension HNInputController {
 
         let noModifiers = deviceFlags.intersection([.shift, .control, .option, .command]).isEmpty
 
-        let isShiftOnly = deviceFlags.contains(.shift) &&
-            !deviceFlags.contains(.control) &&
-            !deviceFlags.contains(.option) &&
-            !deviceFlags.contains(.command)
-        if isShiftOnly, keyCode == 49,
-           HNUserDefaults.shared.usesShiftSpaceForRomanMode {
-            // Shift+Space: toggle Roman (Latin bypass) mode.
-            // Only active when usesShiftSpaceForRomanMode is enabled.
-            // When HNEventTap is active (Accessibility granted) this branch is
-            // never reached because the event tap consumes Shift+Space before
-            // any application — including Ghostty — sees it. This branch acts
-            // as a fallback when Accessibility permission has not been granted.
-            HNLog("HNInputController: Shift+Space in handle() — tapConsuming=\(HNEventTap.shared.isConsuming)")
+        if noModifiers, keyCode == 53,
+           HNUserDefaults.shared.switchesToRomanOnEsc,
+           !HNEventTap.shared.isConsuming {
+            // ESC fallback — only reached when the consuming tap is NOT active
+            // (Accessibility permission not granted).  When the consuming tap IS
+            // running, it handles both sub-cases itself:
+            //   • Composing: tap consumes ESC, commits composition, switches to
+            //     ASCII, then posts a synthetic ESC.  This branch is never
+            //     reached for that event.
+            //   • Not composing: tap passes ESC through and schedules
+            //     switchToASCII() asynchronously.  The isConsuming guard above
+            //     prevents a redundant second call from this branch.
+            //
+            // Here (no tap) we commit any in-progress composition, switch to the
+            // ASCII layout, and pass the ESC through (return false) so the
+            // focused app receives it.  Terminal emulators may need a second ESC
+            // when composition was active, because they already classified the
+            // original event as "dismiss preedit" at arrival time.
+            HNLog("HNInputController: ESC fallback (no tap) → commit and switch to ASCII")
             inputContext.commitComposition(client: sender as? (any IMKTextInput))
-            toggleRomanMode()
-            sHandled = true
-        } else if noModifiers, keyCode == 53,
-                  HNUserDefaults.shared.switchesToRomanOnEsc,
-                  HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-            // ESC fallback — only reached when the event tap is NOT installed
-            // (no Accessibility permission). When the tap IS running, it
-            // consumes ESC for the composing case and posts a synthetic ESC
-            // after the preedit is cleared; for the non-composing case it
-            // passes ESC through and schedules the mode switch asynchronously.
-            // Here we handle both sub-cases ourselves:
-            //   • Not composing: commit (no-op), switch, pass through.
-            //   • Composing: commit, switch, pass through and rely on the
-            //     client (VimR works; terminal emulators may still need a
-            //     second ESC because they use the preedit state at event-
-            //     arrival time to decide whether to forward ESC to the PTY).
-            HNLog("HNInputController: ESC (tap not active) → switching to Roman mode")
-            inputContext.commitComposition(client: sender as? (any IMKTextInput))
-            HNEventTap.shared.selectInputSource(id: "org.cocomelo.inputmethod.Hanulim.Roman")
-            sHandled = false  // pass ESC through in all cases
+            HNEventTap.shared.switchToASCII()
+            sHandled = false
         } else if deviceFlags == .option, firstChar == 0x0d {
             // Option + Return: show abbreviation candidates
             if let composed = inputContext.composedString {

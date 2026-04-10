@@ -23,15 +23,28 @@ import Carbon
 
 // MARK: - HNEventTap
 
-/// System-level CGEventTap that intercepts key events before any application
-/// sees them. Responsibilities:
+/// System-level CGEventTap that intercepts ESC key events before any
+/// application sees them.
 ///
-/// - Shift+Space: toggles Roman/Korean mode. The event is *consumed* when a
-///   consuming tap is active (Accessibility granted) so that apps like Ghostty
-///   which process raw keys before calling the IME cannot pre-insert a space.
+/// When `switchesToRomanOnEsc` is on and a Hanulim Korean mode is active,
+/// pressing ESC commits any in-progress syllable and switches the system
+/// to its current ASCII-capable keyboard layout (e.g. ABC).
 ///
-/// - ESC (when switchesToRomanOnEsc preference is on): switches to Roman mode
-///   without consuming the event, so vi/vim still receives ESC normally.
+/// **Why TISSelectInputSource is safe here**
+///
+/// The session-destruction bug that prevents using `TISSelectInputSource` for
+/// internal Hanulim mode switches does *not* apply here.  Switching FROM a
+/// Hanulim mode TO a completely different input source (ABC) is a normal full
+/// source switch: the Hanulim IMK session is intentionally terminated, and ABC
+/// requires no IMK controller initialisation.  The next time the user returns
+/// to Hanulim the system creates a fresh IMK session correctly.
+///
+/// **ESC handling strategy**
+///
+/// | State | Action |
+/// |---|---|
+/// | Composing | Consume original ESC; commit composition; switch to ASCII; post synthetic ESC so terminal emulators forward it to the PTY |
+/// | Not composing | Pass original ESC through; switch to ASCII asynchronously |
 ///
 /// Requires Accessibility permission for the consuming tap
 /// (System Settings → Privacy & Security → Accessibility).
@@ -39,15 +52,11 @@ final class HNEventTap: @unchecked Sendable {
 
     static let shared = HNEventTap()
 
-    private static let romanModeID       = "org.cocomelo.inputmethod.Hanulim.Roman"
-    private static let defaultKoreanModeID = "org.cocomelo.inputmethod.Hanulim.2standard"
-
-    /// Updated by HNInputController.setValue(_:forTag:client:) each time the
-    /// system switches to a Korean input source, so we know where to return.
-    var lastKoreanModeID: String = HNEventTap.defaultKoreanModeID
+    private static let bundleID = "org.cocomelo.inputmethod.Hanulim"
 
     /// True only when a consuming (non-listen-only) tap is installed.
-    /// When false the handle(_:client:) fallback in HNInputController is active.
+    /// When false the `handle(_:client:)` fallback in `HNInputController` is
+    /// the only active interception mechanism.
     private(set) var isConsuming = false
 
     private var tap: CFMachPort?
@@ -57,8 +66,8 @@ final class HNEventTap: @unchecked Sendable {
 
     // MARK: - Lifecycle
 
-    /// Install the event tap. Call once from main.swift before the run loop
-    /// starts. If the consuming tap cannot be created (Accessibility not yet
+    /// Install the event tap.  Call once from main.swift before the run loop
+    /// starts.  If the consuming tap cannot be created (Accessibility not yet
     /// granted), prompts for permission — the tap activates on the next launch.
     func start() {
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
@@ -71,24 +80,6 @@ final class HNEventTap: @unchecked Sendable {
             let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
             let flags   = event.flags
 
-            // ── Shift+Space (keyCode 49) ──────────────────────────────────
-            let shiftOnly = flags.contains(.maskShift)
-                && !flags.contains(.maskControl)
-                && !flags.contains(.maskAlternate)
-                && !flags.contains(.maskCommand)
-
-            if shiftOnly && keyCode == 49
-                && HNUserDefaults.shared.usesShiftSpaceForRomanMode {
-                if HNEventTap.shared.isConsuming {
-                    HNLog("HNEventTap: Shift+Space consumed by tap")
-                    DispatchQueue.main.async { HNEventTap.shared.toggleRomanMode() }
-                    return nil                          // consume — app never sees it
-                } else {
-                    HNLog("HNEventTap: Shift+Space seen (listen-only, passing through)")
-                    return Unmanaged.passRetained(event)
-                }
-            }
-
             // ── ESC (keyCode 53, no modifiers) ────────────────────────────
             let noModifiers = !flags.contains(.maskShift)
                 && !flags.contains(.maskControl)
@@ -97,24 +88,23 @@ final class HNEventTap: @unchecked Sendable {
 
             if keyCode == 53 && noModifiers
                 && HNUserDefaults.shared.switchesToRomanOnEsc
-                && HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
+                && HNEventTap.shared.isCurrentlyHanulimMode() {
 
                 if HNInputContext.isComposing {
-                    // A syllable is being composed. Terminal emulators intercept
-                    // ESC when preedit text is active and never forward it to the
-                    // PTY — even if the IME's handle() returns false. The only
-                    // reliable fix is to consume the original ESC here (before any
-                    // app sees it), commit the composition, switch mode, then post
-                    // a synthetic ESC that arrives with no preedit in flight.
+                    // A syllable is being composed.  Terminal emulators decide
+                    // at event-arrival time whether to forward ESC to the PTY
+                    // or treat it as "dismiss preedit".  When preedit text is
+                    // active they always choose the latter — even if the IME's
+                    // handle() later returns false.  The only reliable fix is:
+                    //   1. Consume the original ESC here (before any app sees it).
+                    //   2. Commit the composition on the main thread.
+                    //   3. Switch to the ASCII layout.
+                    //   4. Post a synthetic ESC — it arrives with no preedit, so
+                    //      the terminal forwards it to the PTY normally.
                     HNLog("HNEventTap: ESC during composition — consuming and will synthesize")
                     DispatchQueue.main.async {
-                        // Commit the in-progress syllable into the client.
                         HNInputController.active?.commitForEsc()
-                        // Switch to Roman input source.
-                        HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
-                        // Post a synthetic ESC. The preedit is now cleared and
-                        // the input source is Roman, so terminal emulators will
-                        // forward it through the PTY to the running application.
+                        HNEventTap.shared.switchToASCII()
                         let src = CGEventSource(stateID: .hidSystemState)
                         let dn  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: true)
                         let up  = CGEvent(keyboardEventSource: src, virtualKey: 53, keyDown: false)
@@ -124,12 +114,13 @@ final class HNEventTap: @unchecked Sendable {
                     }
                     return nil  // consume original; synthetic follows on next run loop
                 } else {
-                    // No composition in progress: switch mode asynchronously and
-                    // pass the original ESC through so the app sees it immediately.
-                    HNLog("HNEventTap: ESC (no composition) — passing through, switching mode")
+                    // No composition in progress: pass the original ESC through
+                    // so the app receives it immediately, and switch mode
+                    // asynchronously as a side effect.
+                    HNLog("HNEventTap: ESC (no composition) — passing through, switching to ASCII")
                     DispatchQueue.main.async {
-                        if HNEventTap.shared.isCurrentlyKoreanHanulimMode() {
-                            HNEventTap.shared.selectInputSource(id: HNEventTap.romanModeID)
+                        if HNEventTap.shared.isCurrentlyHanulimMode() {
+                            HNEventTap.shared.switchToASCII()
                         }
                     }
                 }
@@ -195,42 +186,34 @@ final class HNEventTap: @unchecked Sendable {
 
     // MARK: - Mode switching
 
-    func toggleRomanMode() {
-        let targetID = isCurrentlyRomanMode() ? lastKoreanModeID : HNEventTap.romanModeID
-        selectInputSource(id: targetID)
+    /// Switch to the system's current ASCII-capable keyboard layout.
+    ///
+    /// Uses `TISCopyCurrentASCIICapableKeyboardLayoutInputSource()` to find the
+    /// target dynamically — no hardcoded layout ID (works with ABC, US, Dvorak,
+    /// etc.).  `TISSelectInputSource` is safe here because this is a full input
+    /// source switch away from Hanulim, not an internal component mode switch.
+    func switchToASCII() {
+        guard let src = TISCopyCurrentASCIICapableKeyboardLayoutInputSource()?
+                            .takeRetainedValue() else {
+            HNLog("HNEventTap: switchToASCII — no ASCII-capable layout found")
+            return
+        }
+        let status = TISSelectInputSource(src)
+        HNLog("HNEventTap: switchToASCII → TISSelectInputSource status=\(status)")
     }
 
     // MARK: - Helpers
 
-    private func isCurrentlyRomanMode() -> Bool {
-        currentInputSourceID() == HNEventTap.romanModeID
-    }
-
-    /// True when a Hanulim Korean mode (not Roman) is the active input source.
-    func isCurrentlyKoreanHanulimMode() -> Bool {
-        let id = currentInputSourceID()
-        return id.hasPrefix("org.cocomelo.inputmethod.Hanulim.")
-            && id != HNEventTap.romanModeID
-    }
-
-    private func currentInputSourceID() -> String {
+    /// Returns true when the currently active input source is any Hanulim mode.
+    ///
+    /// Reads TIS (read-only — safe) to get the ground-truth active source.
+    /// Called from the event tap callback (background thread); TIS reads are
+    /// thread-safe.
+    func isCurrentlyHanulimMode() -> Bool {
         guard let src = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
-              let ptr = TISGetInputSourceProperty(src, kTISPropertyInputSourceID) else {
-            return ""
-        }
-        return Unmanaged<CFString>.fromOpaque(ptr).takeUnretainedValue() as String
-    }
-
-    func selectInputSource(id: String) {
-        let filterDict = [kTISPropertyInputSourceID: id as CFString] as CFDictionary
-        guard let list = TISCreateInputSourceList(filterDict, true)?.takeRetainedValue(),
-              CFArrayGetCount(list) > 0,
-              let rawPtr = CFArrayGetValueAtIndex(list, 0) else {
-            HNLog("HNEventTap: selectInputSource not found: \(id)")
-            return
-        }
-        let source = Unmanaged<TISInputSource>.fromOpaque(rawPtr).takeUnretainedValue()
-        let err = TISSelectInputSource(source)
-        HNLog("HNEventTap: selectInputSource \(id) → OSStatus \(err)")
+              let ptr = TISGetInputSourceProperty(src, kTISPropertyInputSourceID)
+        else { return false }
+        let id = Unmanaged<CFString>.fromOpaque(ptr).takeUnretainedValue() as String
+        return id.hasPrefix(HNEventTap.bundleID + ".")
     }
 }

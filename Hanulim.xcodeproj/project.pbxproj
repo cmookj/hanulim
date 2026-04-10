@@ -22,11 +22,9 @@
 		0E16F6D92F7FB274007519AE /* HNInputController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D62F7FB274007519AE /* HNInputController.swift */; };
 		0E16F6DA2F7FB274007519AE /* HNCandidates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D32F7FB274007519AE /* HNCandidates.swift */; };
 		0E16F6DB2F7FB274007519AE /* HNInputContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D52F7FB274007519AE /* HNInputContext.swift */; };
-		31928B4A52E04B3FA796DC0B /* HNEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392BBF863CA34A1C80D4B356 /* HNEventTap.swift */; };
 		0E16F6DC2F7FB274007519AE /* HNUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */; };
 		0E16F6DD2F7FB274007519AE /* HNAppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E16F6D22F7FB274007519AE /* HNAppController.swift */; };
-		0ED28CA62F82099900195BFE /* hanulimlat@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0ED28CA52F82099900195BFE /* hanulimlat@2x.png */; };
-		0ED28CA72F82099900195BFE /* hanulimlat.png in Resources */ = {isa = PBXBuildFile; fileRef = 0ED28CA42F82099900195BFE /* hanulimlat.png */; };
+		31928B4A52E04B3FA796DC0B /* HNEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392BBF863CA34A1C80D4B356 /* HNEventTap.swift */; };
 		6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57714A3BEC000E2A10D /* hanulim2a.png */; };
 		6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57814A3BEC000E2A10D /* hanulim3.png */; };
 		6014B58014A3BEC000E2A10D /* hanulim3a.png in Resources */ = {isa = PBXBuildFile; fileRef = 6014B57914A3BEC000E2A10D /* hanulim3a.png */; };
@@ -108,14 +106,12 @@
 		0E16F6D42F7FB274007519AE /* HNCandidatesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNCandidatesController.swift; path = InputMethod/HNCandidatesController.swift; sourceTree = "<group>"; };
 		0E16F6D52F7FB274007519AE /* HNInputContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputContext.swift; path = InputMethod/HNInputContext.swift; sourceTree = "<group>"; };
 		0E16F6D62F7FB274007519AE /* HNInputController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNInputController.swift; path = InputMethod/HNInputController.swift; sourceTree = "<group>"; };
-		392BBF863CA34A1C80D4B356 /* HNEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNEventTap.swift; path = InputMethod/HNEventTap.swift; sourceTree = "<group>"; };
 		0E16F6D72F7FB274007519AE /* HNUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNUserDefaults.swift; path = InputMethod/HNUserDefaults.swift; sourceTree = "<group>"; };
-		0ED28CA42F82099900195BFE /* hanulimlat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulimlat.png; path = InputMethod/hanulimlat.png; sourceTree = "<group>"; };
-		0ED28CA52F82099900195BFE /* hanulimlat@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "hanulimlat@2x.png"; path = "InputMethod/hanulimlat@2x.png"; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		392BBF863CA34A1C80D4B356 /* HNEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HNEventTap.swift; path = InputMethod/HNEventTap.swift; sourceTree = "<group>"; };
 		6014B57714A3BEC000E2A10D /* hanulim2a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim2a.png; path = InputMethod/hanulim2a.png; sourceTree = "<group>"; };
 		6014B57814A3BEC000E2A10D /* hanulim3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3.png; path = InputMethod/hanulim3.png; sourceTree = "<group>"; };
 		6014B57914A3BEC000E2A10D /* hanulim3a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hanulim3a.png; path = InputMethod/hanulim3a.png; sourceTree = "<group>"; };
@@ -268,8 +264,6 @@
 				6014B57914A3BEC000E2A10D /* hanulim3a.png */,
 				6014B57A14A3BEC000E2A10D /* hanulim3n.png */,
 				6014B57B14A3BEC000E2A10D /* hanulim3o.png */,
-				0ED28CA42F82099900195BFE /* hanulimlat.png */,
-				0ED28CA52F82099900195BFE /* hanulimlat@2x.png */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				74BEAC180E4AA00A001AA535 /* InfoPlist.strings */,
 				74BEAC130E4A9FEA001AA535 /* MainMenu.xib */,
@@ -392,6 +386,7 @@
 			dependencies = (
 				CF41989C0E12B2F100A2BE4A /* PBXTargetDependency */,
 				CF3E86030E0BDEB600F1116F /* PBXTargetDependency */,
+				AA01000BB0B0B0B0B000000B /* PBXTargetDependency */,
 			);
 			name = Hanulim;
 			productInstallPath = "$(HOME)/Applications";
@@ -465,6 +460,7 @@
 				"ko-KR",
 			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Hanulim */;
+			productRefGroup = 19C28FACFE9D520D11CA2CBB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -485,8 +481,6 @@
 				74BEAC140E4A9FEA001AA535 /* MainMenu.xib in Resources */,
 				74BEAC0E0E4A9FB5001AA535 /* preferences.xib in Resources */,
 				6014B57E14A3BEC000E2A10D /* hanulim2a.png in Resources */,
-				0ED28CA62F82099900195BFE /* hanulimlat@2x.png in Resources */,
-				0ED28CA72F82099900195BFE /* hanulimlat.png in Resources */,
 				6014B57F14A3BEC000E2A10D /* hanulim3.png in Resources */,
 				6014B58014A3BEC000E2A10D /* hanulim3a.png in Resources */,
 				6014B58114A3BEC000E2A10D /* hanulim3n.png in Resources */,
@@ -565,6 +559,9 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AA01000BB0B0B0B0B000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+		};
 		CF3E86030E0BDEB600F1116F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CF3E85EC0E0BDE2F00F1116F /* AbbrevEdit */;

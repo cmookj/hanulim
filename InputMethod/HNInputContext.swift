@@ -1242,8 +1242,6 @@ private let hnHandlableMask: UInt = {
 
 class HNInputContext {
 
-    private static let romanModeID = "org.cocomelo.inputmethod.Hanulim.Roman"
-
     /// Process-wide flag: true while any HNInputContext has an in-progress
     /// syllable (composedString ≠ nil). Written on the main thread; read by
     /// the CGEventTap callback thread. A momentarily stale read is acceptable
@@ -1252,14 +1250,6 @@ class HNInputContext {
 
     private var keyboardLayout: HNKeyboardLayout?
     var userDefaults: (any HNICUserDefaults)?
-
-    /// True when the Roman (Latin bypass) mode is active.
-    /// Set by setKeyboardLayout, which is called from setValue:forTag:client:
-    /// after TISSelectInputSource successfully switches modes.
-    private(set) var isRomanMode: Bool = false
-
-    /// The last non-Roman input mode, used to restore when exiting Roman mode.
-    private(set) var lastKoreanModeID: String = "org.cocomelo.inputmethod.Hanulim.2standard"
 
     var composedString: String?
 
@@ -1271,31 +1261,11 @@ class HNInputContext {
     // MARK: - Public API
 
     func setKeyboardLayout(name: String) {
-        if name == HNInputContext.romanModeID {
-            isRomanMode = true
-        } else {
-            isRomanMode = false
-            lastKoreanModeID = name
-            keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
-        }
+        keyboardLayout = hnKeyboardLayoutTable.first { $0.name == name }
     }
 
     // Returns true if the key was handled.
     func handleKey(string: String, keyCode: Int, modifiers: Int, client: (any IMKTextInput)?) -> Bool {
-        if isRomanMode {
-            // Ghostty processes key events through its own handler *before*
-            // calling the IME via NSTextInputContext.handleEvent. Evidence:
-            // Shift+Space inserts a blank space in Ghostty even though our
-            // handle() returns true (consumed for mode-toggle) — the space
-            // was already sent to the PTY before we were called.
-            // For regular keys, returning false here triggers a re-dispatch
-            // loop that drops the event. Return true instead: Ghostty already
-            // processed the key, so we just need to not loop.
-            if client?.bundleIdentifier() == "com.mitchellh.ghostty" {
-                return true
-            }
-            return false
-        }
         let couldHandle = self.couldHandle(modifiers: modifiers)
         let keyConv: UInt16 = couldHandle ? keyboardCode(keyCode: keyCode, modifiers: modifiers) : 0
 
