@@ -1414,7 +1414,21 @@ class HNInputContext {
             case 0x08: // delete
                 if !keyBuffer.isEmpty { keyBuffer.removeLast() }
                 compose(client: client)
-                updateComposition(client: client)
+                if composedString != nil {
+                    updateComposition(client: client)
+                } else {
+                    // compose() cleared composedString but updateComposition()
+                    // would be a no-op (nil guard) — it never calls setMarkedText.
+                    // Explicitly clear the preedit so the client doesn't display
+                    // a stale jamo.  This fixes the "need an extra backspace" bug
+                    // in TextEdit and the "first character never disappears" bug
+                    // in Spotlight.
+                    client?.setMarkedText(
+                        "",
+                        selectionRange: NSRange(location: 0, length: 0),
+                        replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
+                    )
+                }
                 return true
 
             case 0x09: // tab
